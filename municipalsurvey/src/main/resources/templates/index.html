@@ -1,0 +1,94 @@
+<html>
+<head>
+    <title>Hi</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    
+    <style>
+        body {
+            background-color: #00081c;
+        }
+        
+        h1, h3 {
+            cursor: default;
+        }
+        
+        #header {
+            text-align: center;
+            margin-top: 10%;
+            vertical-align: middle;
+            color: white;
+            font-family: sans-serif;
+            font-size: 150%;
+            
+            display: none;
+        }
+        
+        #language {
+            margin: auto;
+            width: 100%;
+            
+            display: none;
+        }
+        
+        .language_options {
+            padding: 1px;
+            
+            width: 30%;
+            
+            margin: auto;
+            margin-top: 1%;
+            margin-bottom: 1%;
+            
+            text-align: center;
+            color: white;
+            
+            background-color: #001638;
+            
+            transition: 0.5s;
+        }
+        
+        .language_options:hover {
+            background-color: #012357;
+        }
+        
+        
+    </style>
+</head>
+
+<body>
+    <div id="page1">
+        <div id="header">
+            <h1>Welcome / Bienvenue</h1>
+        </div>
+        
+        <div id="language">
+            <div class="language_options" id="english">
+                <h3>Continue in English</h3>
+            </div>
+            
+            <div class="language_options" id="french">
+                <h3>Continuez a Francais</h3>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        $(document).ready(function() {
+            $("#header").fadeIn(3000);
+            
+            setTimeout(function() {
+                $("#language").fadeIn(3000);
+            }, 500);
+            
+            $("#english").click(function() {
+                 window.location.replace = "/english";
+            });
+            
+            $("#french").click(function() {
+                 window.location.replace = "/french";
+            });
+            
+        });
+    </script>
+</body>
+</html>
