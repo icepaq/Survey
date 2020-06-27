@@ -1,8 +1,10 @@
 <html>
 <head>
     <title>Hi</title>
+    
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
+    
     <!-- Used for Live Preview Development. DO NOT Remove this CSS code until the application is complete. -->
     <style>
         body {
@@ -74,19 +76,24 @@
     </div>
     
     <script>
+        //JQuery document.ready equivalent. Only run code when the page is loaded.
         $(document).ready(function() {
+            //Fade in the welcome text
             $("#header").fadeIn(3000);
             
+            //After 500ms, load in the survey start options.
             setTimeout(function() {
                 $("#language").fadeIn(3000);
             }, 500);
             
+            //Go to english survey
             $("#english").click(function() {
-                 window.location.replace = "/english";
+                window.location.href = "/english";
             });
             
+            //Go to French survey
             $("#french").click(function() {
-                 window.location.replace = "/french";
+                 window.location.href = "/french";
             });
             
         });
