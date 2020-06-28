@@ -1,0 +1,37 @@
+<html>
+<head>
+    <title>Survey</title>
+</head>
+
+<body>
+    <div class="question_wrapper" th:each="question: ${questions}">
+        <div class="question">
+            <h3 th:text="${question[0]}"></h3>
+        </div>
+
+        <div th:if="${question[1]} != null" class="answer">
+            <h5 th:text="${question[1]}"></h5>
+        </div>
+
+        <div th:if="${question[2]} != null"  class="answer">
+            <h5 th:text="${question[2]}"></h5>
+        </div>
+
+        <div th:if="${question[3]} != null"  class="answer">
+            <h5 th:text="${question[3]}"></h5>
+        </div>
+
+        <div th:if="${question[4]} != null"  class="answer">
+            <h5 th:text="${question[4]}"></h5>
+        </div>
+
+        <div th:if="${question[5]} != null"  class="answer">
+            <h5 th:text="${question[5]}"></h5>
+        </div>
+
+        <div th:if="${question[6]} != null"  class="answer">
+            <h5 th:text="${question[6]}"></h5>
+        </div>
+    </div>
+</body>
+</html>

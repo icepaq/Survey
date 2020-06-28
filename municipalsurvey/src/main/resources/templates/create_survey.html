@@ -1,22 +1,85 @@
 <html>
 <head>
     <title>Create Survey</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
 </head>
 
 <body>
     <table>
-        <form action="/submit_changes" method="POST">
-            Question: <input type="text" name="question"/>
-
-            Answer 1: <input type="text" name="answer1"/>
-            Answer 2: <input type="text" name="answer2"/>
-            Answer 3: <input type="text" name="answer3"/>
-            Answer 4: <input type="text" name="answer4"/>
-            Answer 5: <input type="text" name="answer5"/>
-            Answer 6: <input type="text" name="answer6"/>
-
-            <input type="submit" value="Submit"/>
-        </form>
+        <tr>
+            <td>
+                Question: 
+            </td>
+            <td>
+                <input type="text" id="question"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Answer 1: 
+            </td>
+            <td>
+                <input type="text" id="answer1"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Answer 2: 
+            </td>
+            <td>
+                <input type="text" id="answer2"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Answer 3: 
+            </td>
+            <td>
+                <input type="text" id="answer3"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Answer 4: 
+            </td>
+            <td>
+                <input type="text" id="answer4"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Answer 5: 
+            </td>
+            <td>
+                <input type="text" id="answer5"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Answer 6: 
+            </td>
+            <td>
+                <input type="text" id="answer6"/>
+            </td>
+        </tr>
     </table>
+
+    <button id="submit_questions">Submit Questions</button>
+
+    <script>
+        $(document).ready(function() {
+            $("#submit_questions").click(function() {
+                var question = $("#question").val();
+                var answer1 = $("#answer1").val();
+                var answer2 = $("#answer2").val();
+                var answer3 = $("#answer3").val();
+                var answer4 = $("#answer4").val();
+                var answer5 = $("#answer5").val();
+                var answer6 = $("#answer6").val();
+
+                $.get("/submit_changes", {question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6});
+            });
+        });
+    </script>
 </body>
 </html>
