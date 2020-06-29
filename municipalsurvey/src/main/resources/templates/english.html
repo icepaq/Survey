@@ -1,37 +1,101 @@
 <html>
 <head>
     <title>Survey</title>
+    <script src="jquery-3.5.1.js"></script>
+    <style>
+        body {
+            background-color: #00081c;
+        }
+
+        h3, h5 {
+            color: white;
+        }
+
+        .question_wrapper {
+            display: none;
+        }
+
+        .question {
+            text-align: center;
+        }
+
+        .answer {
+            padding: 3px;
+            transition: 1s;
+        }
+
+        .answer:hover {
+            background-color: #001447;
+        }
+
+        .wrapper {
+            width: 40%;
+            margin-left: auto;
+            margin-right: auto;
+
+            border-color: black;
+            border: 2px;
+
+            height: 50%;
+            margin-top: 10%;
+        }
+
+    </style>
 </head>
 
 <body>
+    <div class="wrapper">
     <div class="question_wrapper" th:each="question: ${questions}">
         <div class="question">
             <h3 th:text="${question[0]}"></h3>
         </div>
 
-        <div th:if="${question[1]} != null" class="answer">
+        <div th:if="${question[1]} != null"  class="answer" onclick="answer(0)">
             <h5 th:text="${question[1]}"></h5>
         </div>
 
-        <div th:if="${question[2]} != null"  class="answer">
+        <div th:if="${question[2]} != null"  class="answer" onclick="answer(1)">
             <h5 th:text="${question[2]}"></h5>
         </div>
 
-        <div th:if="${question[3]} != null"  class="answer">
+        <div th:if="${question[3]} != null"  class="answer" onclick="answer(2)">
             <h5 th:text="${question[3]}"></h5>
         </div>
 
-        <div th:if="${question[4]} != null"  class="answer">
+        <div th:if="${question[4]} != null"  class="answer" onclick="answer(3)">
             <h5 th:text="${question[4]}"></h5>
         </div>
 
-        <div th:if="${question[5]} != null"  class="answer">
+        <div th:if="${question[5]} != null"  class="answer" onclick="answer(4)">
             <h5 th:text="${question[5]}"></h5>
         </div>
 
-        <div th:if="${question[6]} != null"  class="answer">
+        <div th:if="${question[6]} != null"  class="answer" onclick="answer(5)">
             <h5 th:text="${question[6]}"></h5>
         </div>
     </div>
+    </div>
+
+    <script>
+        var question_order = 0; //Which question is currently visible
+        var questions = document.getElementsByClassName("question_wrapper"); //List of question elements
+
+        function answer(answer_id) {
+            $.get("/submit_answer", {question: question_order, answer: answer_id});
+            
+            $(questions[question_order]).fadeOut();
+            question_order += 1;
+            setTimeout(function() {
+                $(questions[question_order]).fadeIn();
+            }, 500);
+            
+        }
+        
+        $(document).ready(function() {
+            //Fadein first question
+            $(questions).first().fadeIn();
+            
+        });
+    </script>
 </body>
 </html>
