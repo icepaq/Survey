@@ -32,8 +32,10 @@ public class WebController {
 	}
 	
 	@RequestMapping(value = "/create_survey")
-	public String create_survey() {
+	public String create_survey(Model model) throws SQLException {
 		
+		model.addAttribute("questions", a.getAnswers());
+		model.addAttribute("question_answers", a.question_answers());
 		return "create_survey";
 	}
 	
@@ -51,6 +53,20 @@ public class WebController {
 		
 		a.submit_answer(request.getRemoteAddr(), question, answer);
 		return "SUCCESS";
+	}
+	
+	@RequestMapping(value = "/submit_question_changes")
+	@ResponseBody
+	public String submit_question_changes(@RequestParam String question_id, @RequestParam String question, @RequestParam String answer1, @RequestParam String answer2, @RequestParam String answer3, @RequestParam String answer4, @RequestParam String answer5, @RequestParam String answer6) throws SQLException {
+		
+		return a.updateQuestion(question_id, question, answer1, answer2, answer3, answer4, answer5, answer6);
+	}	
+	
+	@RequestMapping(value = "/delete_question")
+	@ResponseBody
+	public String delete_question(@RequestParam String question_id) throws SQLException {
+		
+		return a.deleteQuestion(question_id);
 	}
 }
 	

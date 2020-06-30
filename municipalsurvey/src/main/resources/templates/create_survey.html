@@ -2,13 +2,92 @@
 <head>
     <title>Create Survey</title>
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+
+    <style>
+        /* Text Formatting */
+        td {
+            padding: 5px;
+        }
+
+        input {
+            padding: 10px;
+        }
+
+        p, span {
+            font-size: 23px;
+        }
+
+
+        /* Button Formatting */
+        #submit_questions {
+            background-color: white;
+            border-color: black;
+            color: black;
+
+            text-align: center;
+            text-decoration: none;
+
+            display: inline-block;
+            cursor: pointer;
+
+            padding: 10px 98px;
+
+            font-size: 16px;
+        }
+
+        .edit_question {
+            background-color: white;
+            border-color: black;
+            color: black;
+
+            text-align: center;
+            text-decoration: none;
+
+            display: inline-block;
+            cursor: pointer;
+
+            padding: 10px 50px;
+
+            font-size: 16px;
+        }
+
+        #add_question {
+            border-style: solid;
+            border-color: black;
+            border-width: 1px;
+
+            padding: 20px;
+            width: 320px;
+        }
+
+
+        /* Having table of questions and edit questions table next to eachother */
+        #questions_wrapper {
+            display: table;
+        }
+
+        #questions {
+            display: table-cell;
+
+            min-width: 100px;
+            min-height: 200px;
+        }
+
+        /* Keeping the edit form hidden until the user chooses to reveal it. Display will be changed into table cell with JavaScipt */
+        #edit_question_form {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
+    <h1>Survey Settings</h1>
+    <div id="add_question">
+    <h2>Add Question</h3>
     <table>
         <tr>
             <td>
-                Question: 
+                <p>Question: </p>
             </td>
             <td>
                 <input type="text" id="question"/>
@@ -16,15 +95,15 @@
         </tr>
         <tr>
             <td>
-                Answer 1: 
+                <p> Option 1: </p>
             </td>
             <td>
-                <input type="text" id="answer1"/>
+               <p> <input type="text" id="answer1"/>
             </td>
         </tr>
         <tr>
             <td>
-                Answer 2: 
+                <p> Option 2: </p>
             </td>
             <td>
                 <input type="text" id="answer2"/>
@@ -32,7 +111,7 @@
         </tr>
         <tr>
             <td>
-                Answer 3: 
+                <p> Option 3: </p>
             </td>
             <td>
                 <input type="text" id="answer3"/>
@@ -40,7 +119,7 @@
         </tr>
         <tr>
             <td>
-                Answer 4: 
+                <p> Option 4: </p>
             </td>
             <td>
                 <input type="text" id="answer4"/>
@@ -48,7 +127,7 @@
         </tr>
         <tr>
             <td>
-                Answer 5: 
+                <p> Option 5: </p>
             </td>
             <td>
                 <input type="text" id="answer5"/>
@@ -56,17 +135,75 @@
         </tr>
         <tr>
             <td>
-                Answer 6: 
+                <p> Option 6: </p>
             </td>
             <td>
                 <input type="text" id="answer6"/>
             </td>
         </tr>
     </table>
+    <button id="submit_questions">Add Question</button>
+    
+    </div>
 
-    <button id="submit_questions">Submit Questions</button>
+    <div id="questions_wrapper">
+        <div id="questions">
+            <table>
+                <tr>
+                    <th>Question</th>
+                    <th>Answers</th>
+                    <th>Delete Question</th>
+                </tr>
+                <tr id="question" th:each="q: ${question_answers}">
+                    <td><span th:text="${q[2]}" th:id="${q[4]}"></span></td>
+                    <td><span th:text="${q[3]}" th:id="${q[5]}"></span></td>
+                    <td><button class="edit_question" th:id="${q[0]}">Edit Question</button></td>
+                </tr>
+            </table>
+        </div>
 
+        <div id="edit_question_form">
+            <table>
+                <tr>
+                    <th id="question_id">Question ID: </th>
+                </tr>
+                <tr>
+                    <td><p>Question: </p></td><td><input type="text" id="edit_question"/></td>
+                </tr>
+
+                <tr>
+                    <td><p>Option 1: </p></td><td><input type="text" id="edit_answer1"/></td>
+                </tr>
+
+                <tr>
+                    <td><p>Option 2: </p></td><td><input type="text" id="edit_answer2"/></td>
+                </tr>
+
+                <tr>
+                    <td><p>Option 3: </p></td><td><input type="text" id="edit_answer3"/></td>
+                </tr>
+
+                <tr>
+                    <td><p>Option 4: </p></td><td><input type="text" id="edit_answer4"/></td>
+                </tr>
+
+                <tr>
+                    <td><p>Option 5: </p></td><td><input type="text" id="edit_answer5"/></td>
+                </tr>
+
+                <tr>
+                    <td><p>Option 6: </p></td><td><input type="text" id="edit_answer6"/></td>
+                </tr>
+            </table>
+            <button id="submit_question_changes">Submit Changes</button>
+            <button id="delete_question">Delete Question</button>
+        </div>
+    </div>
     <script>
+        /* Test Comment */
+        var question_id; //When a user submits a question edit the question_id will be passed and is used at the primary key in the database
+
+        //Submit a new question to the database
         $(document).ready(function() {
             $("#submit_questions").click(function() {
                 var question = $("#question").val();
@@ -78,6 +215,48 @@
                 var answer6 = $("#answer6").val();
 
                 $.get("/submit_changes", {question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6});
+            });
+
+            $(".edit_question").click(function() {
+
+                question_id = $(this).closest(".edit_question").attr("id"); 
+                document.getElementById("question_id").innerHTML = "Question ID: " + question_id;
+                
+                var edit_question_form = document.getElementById("edit_question_form")
+                
+                //Fade the edit form in as a table cell
+                edit_question_form.style.display = "table-cell";
+                edit_question_form.style.opacity = "0%";
+                $(edit_question_form).fadeTo(500, 1);
+
+                //Set current values into question edit inputs
+                document.getElementById("edit_question").value = document.getElementById(question_id + "_question").innerHTML; //Sets question
+                
+                //Setting answers into inputs
+                var answers = document.getElementById(question_id + "_answer").innerHTML + ''; //Getting all the possible answers
+                var answersArray = answers.split("|"); //Splitting the answers string into arrays
+                
+                for(var i = 0; i < 6; i++) {
+                    document.getElementById("edit_answer" + (i + 1)).value = answersArray[i]; //Adding each answer into the corresponding input
+                }
+            });
+
+            //Submit question edits into the database
+            $("#submit_question_changes").click(function() {
+                var question = $("#edit_question").val();
+                var answer1 = $("#edit_answer1").val();
+                var answer2 = $("#edit_answer2").val();
+                var answer3 = $("#edit_answer3").val();
+                var answer4 = $("#edit_answer4").val();
+                var answer5 = $("#edit_answer5").val();
+                var answer6 = $("#edit_answer6").val();
+
+                $.get("/submit_question_changes", {question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6, question_id: question_id});
+            });
+
+            //Delete a question
+            $("#delete_question").click(function() {
+                $.get("/delete_question", {question_id: question_id});
             });
         });
     </script>
