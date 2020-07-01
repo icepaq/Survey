@@ -14,18 +14,19 @@
         </div>
         
         <div id="language">
-            <div class="language_options" id="english">
-                <h3>Continue in English</h3>
-            </div>
-            
-            <div class="language_options" id="french">
-                <h3>Continuez a Francais</h3>
+            <div class="language_wrapper" th:each="s: ${surveys}">
+                <div class="language_options"  th:id="${s[0]}"  th:attr="onclick=${s[2]}">
+                    <h3 th:text="${s[1]}"></h3>
+                </div>
             </div>
         </div>
     </div>
     
     <script>
-        //JQuery document.ready equivalent. Only run code when the page is loaded.
+        function survey_select(survey) {
+            window.location.href = "/survey?survey=" + survey;
+        }
+
         $(document).ready(function() {
             //Fade in the welcome text
             $("#header").fadeIn(3000);
@@ -34,17 +35,6 @@
             setTimeout(function() {
                 $("#language").fadeIn(3000);
             }, 500);
-            
-            //Go to english survey
-            $("#english").click(function() {
-                window.location.href = "/english";
-            });
-            
-            //Go to French survey
-            $("#french").click(function() {
-                 window.location.href = "/french";
-            });
-            
         });
     </script>
 </body>

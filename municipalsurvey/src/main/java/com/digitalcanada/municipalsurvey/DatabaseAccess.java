@@ -9,6 +9,85 @@ import java.sql.Statement;
 
 public class DatabaseAccess {
 	
+	public String addSurvey(String name, String message) throws SQLException {
+		
+		String query = "INSERT INTO surveys VALUES(NULL, ?, ?)";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		stmt.setString(1, name);
+		stmt.setString(2, message);
+		
+		try {
+			stmt.executeUpdate();
+		}catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		String query2 = "CREATE TABLE " + name + "(question_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, question_mc BOOL, question VARCHAR(60), answers VARCHAR(100))";
+		
+		try {
+			stmt.executeUpdate(query2);
+		}catch(SQLException e) {
+			System.out.println(e);
+		}finally {
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		
+		return "SUCCESS";
+	}
+
+	//Get all surveys
+	public String[][] getSurveys() throws SQLException {
+		
+		String query = "SELECT * FROM survey_db.surveys";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
+		Statement stmt = conn.createStatement();
+		ResultSet rs;
+		
+		int size = 0;
+		try {
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(query);
+			
+			//Find rows in table
+			while(rs.next()) {
+				size++;
+			}
+			
+		} catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		String[][] surveys = new String[size][4];
+		
+		try {
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(query);
+			
+			int loop_counter = 0;
+			while(rs.next()) {
+				surveys[loop_counter][0] = rs.getString(2);
+				surveys[loop_counter][1] = rs.getString(3);
+				surveys[loop_counter][2] = "survey_select('" + surveys[loop_counter][0] + "')";
+				surveys[loop_counter][3] = "survey_delete('" + surveys[loop_counter][0] + "')";
+				
+				loop_counter++;
+			}
+		} catch(SQLException e) {
+			System.out.println(e);
+		} finally {
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		
+		return surveys;
+	}
+	
+	//Delete a question
 	public String deleteQuestion(String question_id) throws SQLException {
 		
 		String query = "DELETE FROM survey_db.questions WHERE question_id = ?";
@@ -32,6 +111,7 @@ public class DatabaseAccess {
 		return "SUCCESS";
 	}
 	
+	//Change properties of a question
 	public String updateQuestion(String question_id, String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
 		
 		String answer = answer1 + "|" + answer2 + "|" + answer3 + "|" + answer4 + "|" + answer5 + "|" + answer6; //Concatenating several variables into one string for database
@@ -59,7 +139,8 @@ public class DatabaseAccess {
 		return "SUCCESS";
 	}
 	
-	public String[][] question_answers() throws SQLException {
+	//Get all questions. Gives more information than just database values/
+	public String[][] question_answers(String survey) throws SQLException {
 		
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
 		Statement stmt = conn.createStatement();
@@ -69,7 +150,7 @@ public class DatabaseAccess {
 		int size = 0;
 		try {
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM survey_db.questions");
+			rs = stmt.executeQuery("SELECT * FROM survey_db." + survey);
 			
 			//Find rows in table
 			while(rs.next()) {
@@ -85,7 +166,7 @@ public class DatabaseAccess {
 		//Appending table values into 2D array
 		try {
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM survey_db.questions");
+			rs = stmt.executeQuery("SELECT * FROM survey_db." + survey);
 			
 			int loop_counter = 0;
 			while(rs.next()) {
@@ -111,6 +192,7 @@ public class DatabaseAccess {
 		
 	}
 	
+	//Submit an answer selected in a survey
 	public String submit_answer(String user_id, String question, String answer) throws SQLException {
 		
 		String query = "INSERT INTO survey_db.answers VALUES(NULL, '" + user_id + "', '" + question + "', '" + answer + "', NOW());";
@@ -132,7 +214,9 @@ public class DatabaseAccess {
 		
 		return "SUCCESS";
 	}
-	public String submit_changes(String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
+	
+	//Submit a new question
+	public String newQuestion(String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
 		String query = "INSERT INTO survey_db.questions VALUES(NULL, 1, '" + question + "', " + "'" + answer1 + "|" + answer2 + "|"  + answer3 + "|" + answer4 + "|" + answer5 + "|" + answer6 + "');";
 		
 		
@@ -155,7 +239,7 @@ public class DatabaseAccess {
 		return "SUCCESS";
 	}
 	
-	public String[][] getAnswers() throws SQLException {
+	public String[][] getAnswers(String survey) throws SQLException {
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
 		Statement stmt = conn.createStatement();
 		ResultSet rs;
@@ -164,7 +248,7 @@ public class DatabaseAccess {
 		int size = 0;
 		try {
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM survey_db.questions");
+			rs = stmt.executeQuery("SELECT * FROM survey_db." + survey);
 			
 			//Find rows in table
 			while(rs.next()) {
@@ -180,7 +264,7 @@ public class DatabaseAccess {
 		//Appending table values into 2D array
 		try {
 			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM survey_db.questions");
+			rs = stmt.executeQuery("SELECT * FROM survey_db." + survey);
 			
 			int loop_counter = 0;
 			while(rs.next()) {
@@ -188,6 +272,7 @@ public class DatabaseAccess {
 				questions[loop_counter][1] = rs.getString(2);
 				questions[loop_counter][2] = rs.getString(3);
 				questions[loop_counter][3] = rs.getString(4);
+				
 				loop_counter++;
 			}
 		} catch(SQLException e) {

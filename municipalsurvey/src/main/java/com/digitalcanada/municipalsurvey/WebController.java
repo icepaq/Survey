@@ -16,26 +16,41 @@ public class WebController {
 	
 	DatabaseAccess a = new DatabaseAccess();
 	
+	@RequestMapping(value = "/new_survey")
+	@ResponseBody
+	public String new_survey(@RequestParam String survey_name, @RequestParam String survey_message) throws SQLException {
+		
+		return a.addSurvey(survey_name, survey_message);
+	}
+	
 	//Home Page
 	@RequestMapping(value = "/")
-	public String index() {
+	public String index(Model model) throws SQLException{
 		
+		model.addAttribute("surveys", a.getSurveys());
 		return "index";
 	}
 	
 	//English Survey
-	@RequestMapping(value = "/english")
-	public String english(Model model) throws SQLException {
+	@RequestMapping(value = "/survey")
+	public String english(Model model, @RequestParam String survey) throws SQLException {
 
-		model.addAttribute("questions", a.getAnswers());
+		model.addAttribute("questions", a.getAnswers(survey));
 		return "english";
 	}
 	
-	@RequestMapping(value = "/create_survey")
-	public String create_survey(Model model) throws SQLException {
+	@RequestMapping(value = "/surveys")
+	public String surveys(Model model) throws SQLException {
 		
-		model.addAttribute("questions", a.getAnswers());
-		model.addAttribute("question_answers", a.question_answers());
+		model.addAttribute("surveys", a.getSurveys());
+		return "surveys";
+	}
+	
+	@RequestMapping(value = "/survey_control")
+	public String create_survey(Model model, @RequestParam String survey) throws SQLException {
+		
+		model.addAttribute("questions", a.getAnswers(survey)); //Stores answers from selected survey table passing as a GET/POST Parameter
+		model.addAttribute("question_answers", a.question_answers(survey)); //Similar to getAnswers but retrieves additional indexes for Thymeleaf tags
 		return "create_survey";
 	}
 	
@@ -44,7 +59,7 @@ public class WebController {
 	@ResponseBody
 	public String submit_changes(@RequestParam String question, @RequestParam String answer1, @RequestParam String answer2, @RequestParam String answer3, @RequestParam String answer4, @RequestParam String answer5, @RequestParam String answer6) throws SQLException {
 		
-		return a.submit_changes(question, answer1, answer2, answer3, answer4, answer5, answer6);
+		return a.newQuestion(question, answer1, answer2, answer3, answer4, answer5, answer6);
 	}
 	
 	@RequestMapping(value = "/submit_answer")

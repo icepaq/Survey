@@ -1,0 +1,32 @@
+<html>
+<head>
+    <title>Surveys</title>
+</head>
+
+<body>
+
+<script>
+    function survey_select(survey) {
+        window.location.href = "/survey_control?survey=" + survey;
+    }
+
+    function new_servey() {
+        $("#new_survey_form").fadeIn();
+    }   
+
+    function survey_delete(survey) {
+        $.get("/delete_survey", {survey: survey});
+    }
+
+    $(document).ready(function() {
+        $("#submit_new_survey").click(function() {
+            var survey_name = $("#survey_name").val();
+            var survey_message = $("#survey_message").val();
+
+            $.get("/new_survey", {survey_name: survey_name, survey_message: survey_message});
+        });
+    });
+</script>
+
+</body>
+</html>

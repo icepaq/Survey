@@ -146,58 +146,57 @@
     
     </div>
 
-    <div id="questions_wrapper">
-        <div id="questions">
-            <table>
-                <tr>
-                    <th>Question</th>
-                    <th>Answers</th>
-                    <th>Delete Question</th>
-                </tr>
-                <tr id="question" th:each="q: ${question_answers}">
-                    <td><span th:text="${q[2]}" th:id="${q[4]}"></span></td>
-                    <td><span th:text="${q[3]}" th:id="${q[5]}"></span></td>
-                    <td><button class="edit_question" th:id="${q[0]}">Edit Question</button></td>
-                </tr>
-            </table>
-        </div>
+    <div id="questions">
+        <table>
+            <tr>
+                <th>Question</th>
+                <th>Answers</th>
+                <th>Delete Question</th>
+            </tr>
+            <tr id="question" th:each="q: ${question_answers}">
+                <td><span th:text="${q[2]}" th:id="${q[4]}"></span></td>
+                <td><span th:text="${q[3]}" th:id="${q[5]}"></span></td>
+                <td><button class="edit_question" th:id="${q[0]}">Edit Question</button></td>
+            </tr>
+        </table>
+    </div>
 
-        <div id="edit_question_form">
-            <table>
-                <tr>
-                    <th id="question_id">Question ID: </th>
-                </tr>
-                <tr>
-                    <td><p>Question: </p></td><td><input type="text" id="edit_question"/></td>
-                </tr>
+    <div id="edit_question_form">
+        <table>
+            <tr>
+                <th id="question_id">Question ID: </th>
+            </tr>
+            <tr>
+                <td><p>Question: </p></td><td><input type="text" id="edit_question"/></td>
+            </tr>
 
-                <tr>
-                    <td><p>Option 1: </p></td><td><input type="text" id="edit_answer1"/></td>
-                </tr>
+            <tr>
+                <td><p>Option 1: </p></td><td><input type="text" id="edit_answer1"/></td>
+            </tr>
 
-                <tr>
-                    <td><p>Option 2: </p></td><td><input type="text" id="edit_answer2"/></td>
-                </tr>
+            <tr>
+                <td><p>Option 2: </p></td><td><input type="text" id="edit_answer2"/></td>
+            </tr>
 
-                <tr>
-                    <td><p>Option 3: </p></td><td><input type="text" id="edit_answer3"/></td>
-                </tr>
+            <tr>
+                <td><p>Option 3: </p></td><td><input type="text" id="edit_answer3"/></td>
+            </tr>
 
-                <tr>
-                    <td><p>Option 4: </p></td><td><input type="text" id="edit_answer4"/></td>
-                </tr>
+            <tr>
+                <td><p>Option 4: </p></td><td><input type="text" id="edit_answer4"/></td>
+            </tr>
 
-                <tr>
-                    <td><p>Option 5: </p></td><td><input type="text" id="edit_answer5"/></td>
-                </tr>
+            <tr>
+                <td><p>Option 5: </p></td><td><input type="text" id="edit_answer5"/></td>
+            </tr>
 
-                <tr>
-                    <td><p>Option 6: </p></td><td><input type="text" id="edit_answer6"/></td>
-                </tr>
-            </table>
-            <button id="submit_question_changes">Submit Changes</button>
-            <button id="delete_question">Delete Question</button>
-        </div>
+            <tr>
+                <td><p>Option 6: </p></td><td><input type="text" id="edit_answer6"/></td>
+            </tr>
+        </table>
+        <button id="submit_question_changes">Submit Changes</button>
+        <button id="delete_question">Delete Question</button>
+    </div>
     </div>
     <script>
         /* Test Comment */
