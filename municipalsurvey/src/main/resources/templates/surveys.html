@@ -1,17 +1,78 @@
 <html>
 <head>
     <title>Surveys</title>
+
+    <style>
+        th, td{
+            padding: 10px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        #button {
+            font-size: 16px;
+            padding: 10px 30px;
+        }
+
+        #surveys_table {
+            border-style: solid;
+            border-color: rgb(119, 119, 119);
+            border-width: 1px;
+
+            padding: 10px;
+            width: 450px;
+        }
+    </style>
+
+    <script src="jquery-3.5.1.js"></script>
 </head>
 
 <body>
+    <h1>Survey Management</h1>
+    <div id="surveys_table">
+        <h2>Surveys</h2>
+        <table>
+            <tr th:each="s: ${surveys}">
+                <td> <span th:text="${s[0]}"></span> </td>
+                <td> <button th:attr="onclick=${s[2]}">EDIT</button> </td>
+                <td> <button th:attr="onclick=${s[3]}">DELETE</button> </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="new_survey">
+        <table>
+            <tr>
+                <td>
+                    Survey Name:
+                </td>
+                <td>
+                    <input id="survey_name"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Survey Message:
+                </td>
+                <td>
+                    <input id="survey_message"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button onclick="new_survey()">Create Survey</button>
+                </td>
+            </tr>
+        </table>
+    </div>
 
 <script>
     function survey_select(survey) {
         window.location.href = "/survey_control?survey=" + survey;
     }
 
-    function new_servey() {
-        $("#new_survey_form").fadeIn();
+    function new_survey() {
+        $.get("/new_survey", {survey_name: $("#survey_name").val(), survey_message: $("#survey_message").val()});
     }   
 
     function survey_delete(survey) {

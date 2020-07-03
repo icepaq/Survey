@@ -9,6 +9,32 @@ import java.sql.Statement;
 
 public class DatabaseAccess {
 	
+	public String deleteSurvey(String survey) throws SQLException {
+		String query = "DELETE FROM surveys WHERE survey_name = ?";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		stmt.setString(1, survey);
+		
+		try {
+			stmt.executeUpdate();
+		}catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		String query2 = "DROP " + survey;
+		try {
+			stmt.executeUpdate(query2);
+		}catch(SQLException e) {
+			System.out.println(e);
+		}finally {
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		return "";
+	}
+	
 	public String addSurvey(String name, String message) throws SQLException {
 		
 		String query = "INSERT INTO surveys VALUES(NULL, ?, ?)";
@@ -19,6 +45,7 @@ public class DatabaseAccess {
 		stmt.setString(2, message);
 		
 		try {
+			System.out.println("Line 48: " + query);
 			stmt.executeUpdate();
 		}catch(SQLException e) {
 			System.out.println(e);
@@ -27,6 +54,7 @@ public class DatabaseAccess {
 		String query2 = "CREATE TABLE " + name + "(question_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, question_mc BOOL, question VARCHAR(60), answers VARCHAR(100))";
 		
 		try {
+			System.out.println("Line 57: " + query2);
 			stmt.executeUpdate(query2);
 		}catch(SQLException e) {
 			System.out.println(e);
@@ -112,10 +140,10 @@ public class DatabaseAccess {
 	}
 	
 	//Change properties of a question
-	public String updateQuestion(String question_id, String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
+	public String updateQuestion(String survey, String question_id, String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
 		
 		String answer = answer1 + "|" + answer2 + "|" + answer3 + "|" + answer4 + "|" + answer5 + "|" + answer6; //Concatenating several variables into one string for database
-		String query = "UPDATE survey_db.questions SET question = ?, answers = ? WHERE question_id = ?";
+		String query = "UPDATE survey_db." + survey + " SET question = ?, answers = ? WHERE question_id = ?";
 		System.out.println(query);
 		
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
@@ -216,9 +244,9 @@ public class DatabaseAccess {
 	}
 	
 	//Submit a new question
-	public String newQuestion(String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
-		String query = "INSERT INTO survey_db.questions VALUES(NULL, 1, '" + question + "', " + "'" + answer1 + "|" + answer2 + "|"  + answer3 + "|" + answer4 + "|" + answer5 + "|" + answer6 + "');";
-		
+	public String newQuestion(String survey, String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
+		String query = "INSERT INTO survey_db." + survey + " VALUES(NULL, 1, '" + question + "', " + "'" + answer1 + "|" + answer2 + "|"  + answer3 + "|" + answer4 + "|" + answer5 + "|" + answer6 + "');";
+		System.out.println("Line 249: " + query);
 		
 		
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");

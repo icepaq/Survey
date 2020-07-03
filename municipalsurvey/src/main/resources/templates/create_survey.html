@@ -82,6 +82,7 @@
 
 <body>
     <h1>Survey Settings</h1>
+    <h3 id="survey_name" th:text="${survey}"></h3>
     <div id="add_question">
     <h2>Add Question</h3>
     <table>
@@ -205,6 +206,7 @@
         //Submit a new question to the database
         $(document).ready(function() {
             $("#submit_questions").click(function() {
+                var survey = $("#survey_name").text();
                 var question = $("#question").val();
                 var answer1 = $("#answer1").val();
                 var answer2 = $("#answer2").val();
@@ -213,7 +215,7 @@
                 var answer5 = $("#answer5").val();
                 var answer6 = $("#answer6").val();
 
-                $.get("/submit_changes", {question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6});
+                $.get("/submit_changes", {survey: survey, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6});
             });
 
             $(".edit_question").click(function() {
@@ -231,7 +233,7 @@
                 //Set current values into question edit inputs
                 document.getElementById("edit_question").value = document.getElementById(question_id + "_question").innerHTML; //Sets question
                 
-                //Setting answers into inputs
+                //Setting answers into inputs. This is due to the storage methods that are used for questions.
                 var answers = document.getElementById(question_id + "_answer").innerHTML + ''; //Getting all the possible answers
                 var answersArray = answers.split("|"); //Splitting the answers string into arrays
                 
@@ -242,6 +244,7 @@
 
             //Submit question edits into the database
             $("#submit_question_changes").click(function() {
+                var survey = $("#survey_name").text();
                 var question = $("#edit_question").val();
                 var answer1 = $("#edit_answer1").val();
                 var answer2 = $("#edit_answer2").val();
@@ -250,7 +253,7 @@
                 var answer5 = $("#edit_answer5").val();
                 var answer6 = $("#edit_answer6").val();
 
-                $.get("/submit_question_changes", {question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6, question_id: question_id});
+                $.get("/submit_question_changes", {survey: survey, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6, question_id: question_id});
             });
 
             //Delete a question
