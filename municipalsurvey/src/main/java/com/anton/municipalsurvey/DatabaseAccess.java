@@ -1,4 +1,4 @@
-package com.digitalcanada.municipalsurvey;
+package com.anton.municipalsurvey;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,22 +7,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+//This class takes care of all MySQL connections and other logic that has to do with database connections.
 public class DatabaseAccess {
 	
+	//Deletes a survey by removing the survey entry from the surveys table and, dropping the survey's table.
 	public String deleteSurvey(String survey) throws SQLException {
-		String query = "DELETE FROM surveys WHERE survey_name = ?";
+		String query = "DELETE FROM surveys WHERE survey_name = ?"; //Delete Survey Entry
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, survey);
 		
 		try {
-			stmt.executeUpdate();
+			stmt.executeUpdate(); 
 		}catch(SQLException e) {
 			System.out.println(e);
 		}
 		
-		String query2 = "DROP " + survey;
+		String query2 = "DROP TABLE " + survey; //Drop survey's table
 		try {
 			stmt.executeUpdate(query2);
 		}catch(SQLException e) {
@@ -35,10 +37,33 @@ public class DatabaseAccess {
 		return "";
 	}
 	
+	//Create a survey but check for duplicates before
 	public String addSurvey(String name, String message) throws SQLException {
 		
-		String query = "INSERT INTO surveys VALUES(NULL, ?, ?)";
+		/* Checks if `name` is a duplicate entry */
+		String queryEntryCheck = "SELECT * FROM surveys WHERE survey_name = ?";
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		PreparedStatement EntryCheckStatement = conn.prepareStatement(queryEntryCheck);
+		ResultSet rs;
+		
+		EntryCheckStatement.setString(1, name);
+		
+		try {
+			rs = EntryCheckStatement.executeQuery();
+			
+			//If the entry is a duplicate then abort
+			if(rs.isBeforeFirst()) {
+				System.out.println("Duplicate Survey Entry");
+				conn.close();
+				return "ERROR - DUPLICATE ENTRY";
+			}
+		}catch(SQLException e) {
+			System.out.println("Line 51: " + e);
+		}
+		
+		
+		/* Create a survey entry */
+		String query = "INSERT INTO surveys VALUES(NULL, ?, ?)";
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, name);
@@ -51,6 +76,7 @@ public class DatabaseAccess {
 			System.out.println(e);
 		}
 		
+		/* Create a table for the survey */
 		String query2 = "CREATE TABLE " + name + "(question_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, question_mc BOOL, question VARCHAR(60), answers VARCHAR(100))";
 		
 		try {
@@ -99,6 +125,8 @@ public class DatabaseAccess {
 			while(rs.next()) {
 				surveys[loop_counter][0] = rs.getString(2);
 				surveys[loop_counter][1] = rs.getString(3);
+				
+				//These two variables are used for th:attr due to String limitations in THymeleaf
 				surveys[loop_counter][2] = "survey_select('" + surveys[loop_counter][0] + "')";
 				surveys[loop_counter][3] = "survey_delete('" + surveys[loop_counter][0] + "')";
 				

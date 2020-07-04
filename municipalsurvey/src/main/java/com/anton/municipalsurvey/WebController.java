@@ -1,4 +1,4 @@
-package com.digitalcanada.municipalsurvey;
+package com.anton.municipalsurvey;
 
 import java.sql.SQLException;
 
@@ -40,10 +40,10 @@ public class WebController {
 	
 	//English Survey
 	@RequestMapping(value = "/survey")
-	public String english(Model model, @RequestParam String survey) throws SQLException {
+	public String survey(Model model, @RequestParam String survey) throws SQLException {
 
 		model.addAttribute("questions", a.getAnswers(survey));
-		return "english";
+		return "survey";
 	}
 	
 	@RequestMapping(value = "/surveys")

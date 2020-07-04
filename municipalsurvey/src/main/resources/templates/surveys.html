@@ -5,13 +5,26 @@
     <style>
         th, td{
             padding: 10px;
-            text-align: center;
+
             min-width: 100px;
         }
 
-        #button {
+        span {
             font-size: 16px;
-            padding: 10px 30px;
+        }
+
+        button {
+            background-color: white;
+            border-color: black;
+            color: black;
+
+            text-align: center;
+            text-decoration: none;
+
+            display: inline-block;
+            cursor: pointer;
+
+            padding: 10px 50px;
         }
 
         #surveys_table {
@@ -20,7 +33,17 @@
             border-width: 1px;
 
             padding: 10px;
-            width: 450px;
+            width: 470px;
+        }
+
+        #new_survey {
+            margin-top: 20px;
+            padding: 10px;
+            width: 400px;
+
+            border-style: solid;
+            border-color: rgb(119, 119, 119);
+            border-width: 1px;
         }
     </style>
 
@@ -41,6 +64,7 @@
     </div>
 
     <div id="new_survey">
+        <h2>New Survey</h2>
         <table>
             <tr>
                 <td>

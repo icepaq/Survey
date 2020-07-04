@@ -1,4 +1,4 @@
-package com.digitalcanada.municipalsurvey;
+package com.anton.municipalsurvey;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

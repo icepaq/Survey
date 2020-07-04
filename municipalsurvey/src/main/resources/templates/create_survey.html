@@ -60,6 +60,10 @@
             width: 320px;
         }
 
+        .button_margin {
+            margin: 10px;
+        }
+
 
         /* Having table of questions and edit questions table next to eachother */
         #questions_wrapper {
@@ -152,7 +156,7 @@
             <tr>
                 <th>Question</th>
                 <th>Answers</th>
-                <th>Delete Question</th>
+                <th>Edit Question</th>
             </tr>
             <tr id="question" th:each="q: ${question_answers}">
                 <td><span th:text="${q[2]}" th:id="${q[4]}"></span></td>
@@ -195,8 +199,8 @@
                 <td><p>Option 6: </p></td><td><input type="text" id="edit_answer6"/></td>
             </tr>
         </table>
-        <button id="submit_question_changes">Submit Changes</button>
-        <button id="delete_question">Delete Question</button>
+        <button class="edit_question button_margin" id="submit_question_changes">Submit Changes</button> <br>
+        <button class="edit_question button_margin" id="delete_question">Delete Question</button>
     </div>
     </div>
     <script>
@@ -233,7 +237,7 @@
                 //Set current values into question edit inputs
                 document.getElementById("edit_question").value = document.getElementById(question_id + "_question").innerHTML; //Sets question
                 
-                //Setting answers into inputs. This is due to the storage methods that are used for questions.
+                //Setting answers into inputs. This is due to the storage methods that are used for questions.  
                 var answers = document.getElementById(question_id + "_answer").innerHTML + ''; //Getting all the possible answers
                 var answersArray = answers.split("|"); //Splitting the answers string into arrays
                 

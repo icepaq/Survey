@@ -40,6 +40,10 @@
             margin-top: 10%;
         }
 
+        #end {
+            display: none;
+        }
+
     </style>
 </head>
 
@@ -74,21 +78,32 @@
             <h5 th:text="${question[6]}"></h5>
         </div>
     </div>
+
+    <div id="end">
+        <h3>Thank you for finishing!</h3>
+        <h4 th:text="${code}"></h4>
+    </div>
     </div>
 
     <script>
         var question_order = 0; //Which question is currently visible
         var questions = document.getElementsByClassName("question_wrapper"); //List of question elements
 
+        //Called when an answer is selected
         function answer(answer_id) {
-            $.get("/submit_answer", {question: question_order, answer: answer_id});
+            $.get("/submit_answer", {question: question_order, answer: answer_id}); //Submit the answer to the server
             
             $(questions[question_order]).fadeOut();
-            question_order += 1;
-            setTimeout(function() {
-                $(questions[question_order]).fadeIn();
-            }, 500);
-            
+            question_order += 1; //Increment the question order
+
+            //If the last question has been answered, show the finish message. Otherwise display the next question.
+            if(question_order >= questions.length) {
+                document.getElementById("end").style.display = "block";
+            } else {
+                setTimeout(function() {
+                    $(questions[question_order]).fadeIn();
+                }, 500);
+            }
         }
         
         $(document).ready(function() {
