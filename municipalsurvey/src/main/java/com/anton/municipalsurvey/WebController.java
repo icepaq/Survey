@@ -16,6 +16,21 @@ public class WebController {
 	
 	DatabaseAccess a = new DatabaseAccess();
 	
+	@RequestMapping(value = "/results")
+	public String results(Model model) throws SQLException {
+		
+		model.addAttribute("surveys", a.surveys());
+		model.addAttribute("results", a.surveyResults());
+		return "results";
+	}
+	
+	@RequestMapping(value = "/login")
+	public String login() {
+		
+		return "login";
+	}
+	
+	//Delete Survey
 	@RequestMapping(value = "/delete_survey")
 	@ResponseBody
 	public String delete_survey(@RequestParam String survey) throws SQLException{
@@ -23,6 +38,7 @@ public class WebController {
 		return a.deleteSurvey(survey);
 	}
 	
+	//New survey
 	@RequestMapping(value = "/new_survey")
 	@ResponseBody
 	public String new_survey(@RequestParam String survey_name, @RequestParam String survey_message) throws SQLException {
@@ -38,14 +54,16 @@ public class WebController {
 		return "index";
 	}
 	
-	//English Survey
+	//Survey Page
 	@RequestMapping(value = "/survey")
 	public String survey(Model model, @RequestParam String survey) throws SQLException {
 
 		model.addAttribute("questions", a.getAnswers(survey));
+		model.addAttribute("survey", survey);
 		return "survey";
 	}
 	
+	//Survey Management
 	@RequestMapping(value = "/surveys")
 	public String surveys(Model model) throws SQLException {
 		
@@ -70,11 +88,13 @@ public class WebController {
 		return a.newQuestion(survey, question, answer1, answer2, answer3, answer4, answer5, answer6);
 	}
 	
+	//Submit Answer
 	@RequestMapping(value = "/submit_answer")
 	@ResponseBody
-	public String submit_answer(@RequestParam String question, @RequestParam String answer, HttpServletRequest request) throws SQLException {
+	public String submit_answer(@RequestParam String question, @RequestParam String answer, HttpServletRequest request, String survey) throws SQLException {
 		
-		a.submit_answer(request.getRemoteAddr(), question, answer);
+		a.submit_answer(request.getRemoteAddr(), question, answer, survey);
+		System.out.println("WebController.submit_answer 82: " + survey);
 		return "SUCCESS";
 	}
 	

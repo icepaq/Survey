@@ -10,6 +10,111 @@ import java.sql.Statement;
 //This class takes care of all MySQL connections and other logic that has to do with database connections.
 public class DatabaseAccess {
 	
+	public String[][][] surveyResults() throws SQLException {
+		
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		ResultSet rs;
+		Statement stmt = conn.createStatement();
+		
+		String[][] surveys = surveys(); // Get a list of surveys
+		String[] queries = new String[surveys.length]; //Each query in this array will access a specific survey results table
+		
+		//Creating the queries to access each table
+		for(int i = 0; i < surveys.length; i++) {
+			queries[i] = "SELECT * FROM " + surveys[i][0] + "_answers";
+			System.out.println(queries[i]);
+		}
+		
+		//Checks the highest amount of entries that any table has
+		int entries = 0;
+		for(int a = 0; a < surveys.length; a++) {
+			try {
+				rs = stmt.executeQuery(queries[a]);
+				
+				int size = 0;
+				while(rs.next()) {
+					size++;
+				}
+				
+				if(size > entries) {
+					entries = size;
+				}
+				
+			}catch(SQLException e) {
+				System.out.println(e);
+			}
+		}
+		
+		String[][][] results = new String[surveys.length][entries][2]; //Initiating 3D array. [surveys][entries][questions, answers]
+		
+		//Go over each survey
+		for(int b = 0; b < surveys.length; b++) {
+			try {
+				rs = stmt.executeQuery(queries[b]);
+				int counter = 0;
+				while(rs.next()) {
+					results[b][counter][0] = rs.getString(2);
+					results[b][counter][1] = rs.getString(3);
+					counter++;
+				}
+				
+			}catch(SQLException e) {
+				System.out.print(e);
+			}
+		}
+		
+		for(int c = 0; c < results.length; c++) {
+			System.out.println("-------------------------------------------------------------");
+			for(int d = 0; d < results[c].length; d++) {
+				System.out.println(results[c][d][0] + " - " + results[c][d][1]);
+			}
+		}
+		
+		
+		return results;
+	}
+	
+	public String[][] surveys() throws SQLException {
+		
+		String query = "SELECT * FROM survey_db.surveys";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		ResultSet rs;
+		Statement stmt = conn.createStatement();
+		
+		int size = 0;
+		try {
+			rs = stmt.executeQuery(query);
+			
+			//Find rows in table
+			while(rs.next()) {
+				size++;
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		String[][] surveys = new String[size][2];
+		try {
+			rs = stmt.executeQuery(query);
+			
+			int counter = 0;
+			while(rs.next()) {
+				surveys[counter][0] = rs.getString(2).toUpperCase();
+				surveys[counter][1] = "tab(survey_id=" + Integer.toString(counter) + ")";
+				counter++;
+			}
+		} catch(SQLException e) {
+			System.out.println(e);
+		} finally {
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		
+		return surveys;
+	}
+	
 	//Deletes a survey by removing the survey entry from the surveys table and, dropping the survey's table.
 	public String deleteSurvey(String survey) throws SQLException {
 		String query = "DELETE FROM surveys WHERE survey_name = ?"; //Delete Survey Entry
@@ -27,6 +132,13 @@ public class DatabaseAccess {
 		String query2 = "DROP TABLE " + survey; //Drop survey's table
 		try {
 			stmt.executeUpdate(query2);
+		}catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		String query3 = "DROP TABLE " + survey + "_answers"; //Drop survey's table
+		try {
+			stmt.executeUpdate(query3);
 		}catch(SQLException e) {
 			System.out.println(e);
 		}finally {
@@ -76,7 +188,7 @@ public class DatabaseAccess {
 			System.out.println(e);
 		}
 		
-		/* Create a table for the survey */
+		/* Create a table for the survey questions*/
 		String query2 = "CREATE TABLE " + name + "(question_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, question_mc BOOL, question VARCHAR(60), answers VARCHAR(100))";
 		
 		try {
@@ -84,11 +196,24 @@ public class DatabaseAccess {
 			stmt.executeUpdate(query2);
 		}catch(SQLException e) {
 			System.out.println(e);
+		}
+		
+		/* Create table for survey answers */
+		Statement stmt2 = conn.createStatement();
+		//CHANGE MADE: July 11, 2020. Changing Table Structure. Old table; question_id, answer_id were INT. Now they are VARCHAR.
+		String query3 = "CREATE TABLE " + name.toLowerCase() + "_answers(entry_id INT PRIMARY KEY AUTO_INCREMENT, question_id VARCHAR(8), answer_id VARCHAR(8) NOT NULL, survey VARCHAR(60) NOT NULL, user_id VARCHAR(60), time datetime NOT NULL)";
+		
+		try {
+			System.out.println("Line 97: " + query3);
+			stmt2.executeUpdate(query3);
+		}catch(SQLException e) {
+			System.out.println(e);
 		}finally {
 			if(conn != null) {
 				conn.close();
 			}
 		}
+		
 		
 		return "SUCCESS";
 	}
@@ -126,7 +251,7 @@ public class DatabaseAccess {
 				surveys[loop_counter][0] = rs.getString(2);
 				surveys[loop_counter][1] = rs.getString(3);
 				
-				//These two variables are used for th:attr due to String limitations in THymeleaf
+				//These two variables are used for th:attr due to String limitations in Thymeleaf
 				surveys[loop_counter][2] = "survey_select('" + surveys[loop_counter][0] + "')";
 				surveys[loop_counter][3] = "survey_delete('" + surveys[loop_counter][0] + "')";
 				
@@ -249,9 +374,9 @@ public class DatabaseAccess {
 	}
 	
 	//Submit an answer selected in a survey
-	public String submit_answer(String user_id, String question, String answer) throws SQLException {
+	public String submit_answer(String user_id, String question, String answer, String survey) throws SQLException {
 		
-		String query = "INSERT INTO survey_db.answers VALUES(NULL, '" + user_id + "', '" + question + "', '" + answer + "', NOW());";
+		String query = "INSERT INTO survey_db." + survey + "_answers VALUES(NULL, '" + question + "', '" + answer + "', '" + survey + "', '" + user_id + "', NOW());";
 		System.out.println(query);
 		
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");

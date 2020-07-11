@@ -44,10 +44,15 @@
             display: none;
         }
 
+        #survey {
+            display: none;
+        }
+
     </style>
 </head>
 
 <body>
+    <div id="survey" th:text="${survey}"></div>
     <div class="wrapper">
     <div class="question_wrapper" th:each="question: ${questions}">
         <div class="question">
@@ -88,10 +93,11 @@
     <script>
         var question_order = 0; //Which question is currently visible
         var questions = document.getElementsByClassName("question_wrapper"); //List of question elements
+        var survey = document.getElementById("survey").innerHTML;
 
         //Called when an answer is selected
         function answer(answer_id) {
-            $.get("/submit_answer", {question: question_order, answer: answer_id}); //Submit the answer to the server
+            $.get("/submit_answer", {question: question_order, answer: answer_id, survey: survey}); //Submit the answer to the server
             
             $(questions[question_order]).fadeOut();
             question_order += 1; //Increment the question order
