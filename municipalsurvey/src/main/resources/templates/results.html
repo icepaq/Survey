@@ -3,6 +3,17 @@
     <title>Results</title>
 
     <style>
+
+        table{
+            border-collapse: collapse;
+        }
+
+        td {
+            min-width: 50px;
+            height: 10px;
+            padding: 10px 20px;
+        }
+
         .header {
             text-align: center;
             font-size: 49px;
@@ -36,6 +47,41 @@
             transition: 0.3s;
         }
 
+        .graph_wrapper {
+            border-style: solid;
+            border-width: 1px;
+            overflow-x: scroll;
+        }
+
+        .graph {
+            height: 300px;
+
+            border-style: solid;
+            border-width: 3px;
+            overflow-x: auto;
+            white-space: nowrap; 
+            position: relative;
+        }
+
+        .bar {
+            border-style: solid;
+            border-width: 1px;
+
+            width: 40px;
+
+            display: inline-block;
+            position: absolute;
+            bottom: 0;
+        }
+
+        .label {
+            width: 40px;
+            margin-left: 20px;
+
+            display: inline-block;
+            position: absolute;
+        }
+        
         li:hover {
             background-color: rgb(68, 68, 68);
         }
@@ -56,25 +102,74 @@
         <div class="menu_survey" th:each="s: ${surveys}">
             <li class="survey_item" th:attr="onclick=${s[1]}" th:text="${s[0]}"></li>
         </div>
-    </ul>    
+    </ul>
 
     <div class="tables" th:each="tables: ${results}">
-        <table>
-            <tr th:each="table: ${tables}">
-                <td th:text="${table[0]}"></td>
-                <td th:text="${table[1]}"></td>
+        <table border="1">
+            <tr>
+                <th>Question</th> 
+                <th>Answer</th>
+                <th>Times Selected</th>
             </tr>
+            <div th:each="table: ${tables}" class="table_row">
+                <tr class="row" th:if="${table[1]} != null">
+                    <td class="question" th:text="${table[0]}"></td>
+                    <td class="answer" th:text="${table[1]}"></td>
+                    <td class="count" th:text="${table[2]}"></td>
+                </tr>
+            </div>
         </table>
+
+        <div class="questions_filter"></div>
+        <div class="graph_wrapper">
+            <div class="graph">
+                <div class="bar" th:each="bars: ${tables}" th:if="${bars[0]} != null"></div>
+            </div>
+            <div class="labels">
+                <div class="label" th:each="bars: ${tables}" th:if="${bars[0]} != null"></div>
+            </div>
+        </div>
     </div>
 <script>
-    var menu_items = document.getElementsByClassName("survey_item");
+
+    var menu_items = document.getElementsByClassName("survey_item"); //Menu bar items
+    var surveys = document.getElementsByClassName("tables"); //Data table
     menu_items[0].classList.add("active");
+    
+    //Displaying the first tab
+    for(var i = 0; i < surveys.length; i++) {
+        surveys[i].style.display = "none";
+    }
+    surveys[0].style.display = "block";
+    
+    //In each survey page
+    for(var table = 0; table < surveys.length; table++) {
+        
+        var rows = surveys[table].getElementsByClassName("row"); //Each row in the table
+        var bars = surveys[table].getElementsByClassName("bar"); //Each bar in the graph below
+        var graph_wrapper = document.getElementsByClassName("graph_wrapper")[table];
+
+        //In each row of the table
+        for(var row = 0; row < rows.length; row++) {
+
+            var label = rows[row].getElementsByClassName("answer")[0].innerHTML; //The answer
+
+            var selected = rows[row].getElementsByClassName("count")[0].innerHTML;
+            bars[row].style.height = ((selected) * 10) + "px";
+            bars[row].style.left = ((row + 1) * 200) + "px";
+
+            graph_wrapper.getElementsByClassName("label")[row].innerHTML = label;
+            graph_wrapper.getElementsByClassName("label")[row].style.left = ((row + 1) * 200) + "px";
+        }
+    }
 
     function tab(survey_id) {
         for(var i = 0; i < menu_items.length; i++) {
             menu_items[i].classList.remove("active");
+            surveys[i].style.display = "none";
         }
         menu_items[survey_id].classList.add("active");
+        surveys[survey_id].style.display = "block";
     }
 </script>
 </body>

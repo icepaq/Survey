@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,28 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class WebController {
 	
 	DatabaseAccess a = new DatabaseAccess();
+	
+	@RequestMapping(value = "/surveyComplete")
+	@ResponseBody
+	public String surveyComplete(@RequestParam String code) throws SQLException {
+		
+		return a.surveyComplete(code);
+	}
+	
+	@RequestMapping(value = "/updateEndMessage")
+	@ResponseBody
+	public String updateEndMEssage(@RequestParam String survey, @RequestParam String message) throws SQLException {
+		
+		return a.updateEndMessage(survey, message);
+	}
+	
+	@RequestMapping(value = "/value")
+	@ResponseBody
+	public String value(@RequestParam String value) {
+		
+		System.out.println();
+		return "";
+	}
 	
 	@RequestMapping(value = "/results")
 	public String results(Model model) throws SQLException {
@@ -41,9 +64,10 @@ public class WebController {
 	//New survey
 	@RequestMapping(value = "/new_survey")
 	@ResponseBody
-	public String new_survey(@RequestParam String survey_name, @RequestParam String survey_message) throws SQLException {
+	public String new_survey(@RequestParam String survey_name, @RequestParam String survey_message, @RequestParam String survey_end_message, @RequestParam String survey_end_code) throws SQLException {
 		
-		return a.addSurvey(survey_name, survey_message);
+		System.out.println(survey_end_code);
+		return a.addSurvey(survey_name, survey_message, survey_end_message, survey_end_code);
 	}
 	
 	//Home Page
@@ -51,15 +75,20 @@ public class WebController {
 	public String index(Model model) throws SQLException{
 		
 		model.addAttribute("surveys", a.getSurveys());
-		return "index";
+		
+		return "index";	
 	}
 	
 	//Survey Page
 	@RequestMapping(value = "/survey")
-	public String survey(Model model, @RequestParam String survey) throws SQLException {
+	public String survey(Model model, @RequestParam String survey, HttpServletRequest request) throws SQLException {
 
-		model.addAttribute("questions", a.getAnswers(survey));
+		model.addAttribute("questions", a.getQuestions(survey));
 		model.addAttribute("survey", survey);
+		model.addAttribute("end_message", a.getEndMessage(survey));
+		model.addAttribute("code", a.getEndCode(survey, request.getRemoteAddr()));
+		
+		
 		return "survey";
 	}
 	
@@ -75,7 +104,7 @@ public class WebController {
 	public String create_survey(Model model, @RequestParam String survey) throws SQLException {
 		
 		model.addAttribute("survey", survey);
-		model.addAttribute("questions", a.getAnswers(survey)); //Stores answers from selected survey table passing as a GET/POST Parameter
+		model.addAttribute("questions", a.question_answers(survey)); //Stores answers from selected survey table passing as a GET/POST Parameter
 		model.addAttribute("question_answers", a.question_answers(survey)); //Similar to getAnswers but retrieves additional indexes for Thymeleaf tags
 		return "create_survey";
 	}
@@ -91,9 +120,9 @@ public class WebController {
 	//Submit Answer
 	@RequestMapping(value = "/submit_answer")
 	@ResponseBody
-	public String submit_answer(@RequestParam String question, @RequestParam String answer, HttpServletRequest request, String survey) throws SQLException {
+	public String submit_answer(@RequestParam String question, @RequestParam String answer, @RequestParam String code, @RequestParam String survey, HttpServletRequest request) throws SQLException {
 		
-		a.submit_answer(request.getRemoteAddr(), question, answer, survey);
+		a.submit_answer(request.getRemoteAddr(), question, answer, code, survey);
 		System.out.println("WebController.submit_answer 82: " + survey);
 		return "SUCCESS";
 	}
@@ -101,7 +130,7 @@ public class WebController {
 	@RequestMapping(value = "/submit_question_changes")
 	@ResponseBody
 	public String submit_question_changes(@RequestParam String survey, @RequestParam String question_id, @RequestParam String question, @RequestParam String answer1, @RequestParam String answer2, @RequestParam String answer3, @RequestParam String answer4, @RequestParam String answer5, @RequestParam String answer6) throws SQLException {
-		
+		System.out.println("/submit_question_changes");
 		return a.updateQuestion(survey, question_id, question, answer1, answer2, answer3, answer4, answer5, answer6);
 	}	
 	

@@ -1,5 +1,6 @@
 package com.anton.municipalsurvey;
 
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -9,6 +10,138 @@ import java.sql.Statement;
 
 //This class takes care of all MySQL connections and other logic that has to do with database connections.
 public class DatabaseAccess {
+	
+	private int temp_index; //See exists()
+	
+	
+	//Sets the code completion column to true
+	public String surveyComplete(String code) throws SQLException {
+		
+		String query = "UPDATE codes SET complete = true WHERE code  = ?";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		ResultSet rs;
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		stmt.setString(1, code);
+		
+		try {
+			stmt.executeUpdate();
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		finally {
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		
+		return "";
+	}
+	
+	//If the survey has codes enabled then a randomly generated 8 character alphanumeric string is passed
+	public String getEndCode(String survey, String ip_address) throws SQLException {
+		
+		String query = "SELECT * FROM surveys WHERE survey_name = ?";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		ResultSet rs;
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		String code = "NULL";
+		stmt.setString(1, survey);
+		
+		try {
+			
+			rs = stmt.executeQuery();
+			
+			while(rs.next()) {
+				if(rs.getInt(5) == 1) { 
+					
+					SecureRandom sr = new SecureRandom();
+					byte bytes[] = new byte[8];
+					
+					sr.nextBytes(bytes);
+					code = bytes.toString().substring(3).toUpperCase(); //Substring removes the SecureRandom constant.
+				}
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		//Now that the code has been generated, add it to the database
+		String code_query = "INSERT INTO codes VALUES(NULL, ?, ?, ?, ?, NOW())";
+		PreparedStatement stmt2 = conn.prepareStatement(code_query);
+		
+		stmt2.setString(1, code);
+		stmt2.setString(2, survey);
+		stmt2.setString(3, ip_address);
+		stmt2.setBoolean(4, false); //The code is currently marked as incomplete. Once the survey is completed, the code will be marked complete.
+		
+		try {
+			stmt2.executeUpdate();
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		if(conn != null) {
+			conn.close();
+		}
+		
+		return code;
+	}
+	
+	//Change end message
+	public String updateEndMessage(String survey, String message) throws SQLException {
+		
+		String query = "UPDATE surveys SET survey_end_message = ? WHERE survey_name = ?";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		stmt.setString(1, message);
+		stmt.setString(2, survey);
+		
+		try {
+			stmt.executeUpdate();
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		finally {
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		
+		return "SUCCESS";
+	}
+	
+	public String getEndMessage(String survey) throws SQLException {
+		
+		String query = "SELECT survey_end_message FROM surveys WHERE survey_name = ?";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		PreparedStatement stmt = conn.prepareStatement(query);
+		ResultSet rs;
+		
+		stmt.setString(1, survey);
+		
+		String message = "";
+		
+		try {
+			
+			rs = stmt.executeQuery();
+			while(rs.next()) {
+				
+				message = rs.getString(1);
+			}
+		}
+		catch(SQLException e) {
+			
+			System.out.println(e);
+		}
+		
+		return message;
+	}
 	
 	public String[][][] surveyResults() throws SQLException {
 		
@@ -21,8 +154,7 @@ public class DatabaseAccess {
 		
 		//Creating the queries to access each table
 		for(int i = 0; i < surveys.length; i++) {
-			queries[i] = "SELECT * FROM " + surveys[i][0] + "_answers";
-			System.out.println(queries[i]);
+			queries[i] = "SELECT * FROM answers WHERE survey_name = '" + surveys[i][0] + "'";
 		}
 		
 		//Checks the highest amount of entries that any table has
@@ -49,31 +181,89 @@ public class DatabaseAccess {
 		
 		//Go over each survey
 		for(int b = 0; b < surveys.length; b++) {
+			
 			try {
-				rs = stmt.executeQuery(queries[b]);
+				
+				rs = stmt.executeQuery(queries[b]); //Execute the appropriate query for each table
 				int counter = 0;
 				while(rs.next()) {
-					results[b][counter][0] = rs.getString(2);
-					results[b][counter][1] = rs.getString(3);
+					
+					results[b][counter][0] = rs.getString(3); //Question 
+					results[b][counter][1] = rs.getString(4); //Answer
 					counter++;
 				}
-				
-			}catch(SQLException e) {
+			}
+			catch(SQLException e) {
 				System.out.print(e);
 			}
 		}
 		
-		for(int c = 0; c < results.length; c++) {
-			System.out.println("-------------------------------------------------------------");
-			for(int d = 0; d < results[c].length; d++) {
-				System.out.println(results[c][d][0] + " - " + results[c][d][1]);
+		
+		/* The following 2 step sorting algorithm takes the raw data from results and makes it easily accessible for Thymeleaf */
+		
+		String[][][] sorted_results = new String[surveys.length][entries][3]; //Each survey, largest amount of entries made on any of the surveys
+		
+		for(int survey_counter = 0; survey_counter < surveys.length; survey_counter++) { //Goes over each survey
+
+			String[][] sorted_results_cache = new String[entries][2]; //Made for checking duplicate entries
+			
+			//Goes over each entry
+			for(int entry_counter = 0; entry_counter < results[survey_counter].length; entry_counter++) { 
+				
+				if(exists(results[survey_counter][entry_counter], sorted_results_cache)) { 
+						
+					//Increment the results counter by 1
+					int count = Integer.parseInt(sorted_results[survey_counter][temp_index][2]) + 1;
+					sorted_results[survey_counter][temp_index][2] = Integer.toString(count);
+				}
+				else { //If the entry does not already exist, add it.
+					
+					if(results[survey_counter][entry_counter][0] != null) {
+						
+						//Add the question/answer combo into the array	
+						sorted_results[survey_counter][entry_counter][0] = results[survey_counter][entry_counter][0];
+						sorted_results[survey_counter][entry_counter][1] = results[survey_counter][entry_counter][1];
+						sorted_results[survey_counter][entry_counter][2] = "1";
+						
+						sorted_results_cache[entry_counter][0] = results[survey_counter][entry_counter][0];
+						sorted_results_cache[entry_counter][1] = results[survey_counter][entry_counter][1];
+					}
+				}
 			}
 		}
+			
+		/* Step 2. Adding question and answer to  */
+		String[][][] final_results = new String[surveys.length][entries][3];
 		
-		
-		return results;
+		/* for(int survey = 0; survey < surveys.length; survey++) {
+			
+			for()
+		} */
+		return sorted_results;
 	}
 	
+	//Check if an entry is in the sorted_results
+	private boolean exists(String[] entry, String[][] sorted_results) {
+		for(int i = 0; i < sorted_results.length; i++) { //Go through each entry in sorted_results
+			
+			//Avoid crashing when sorted_results is empty
+			try {
+				if(sorted_results[i][0].equals(entry[0])) { //Check if the question has already been added
+					
+					if(sorted_results[i][1].equals(entry[1])) { //Check if an answer to that question has already been added
+						
+						temp_index = i; //i is the entry that is being checked. Used by survey_results to append the question/answer combo count
+						return true;
+					}
+				}
+			}
+			catch(NullPointerException e) {
+				
+			}
+		}
+		return false;
+	}
+
 	public String[][] surveys() throws SQLException {
 		
 		String query = "SELECT * FROM survey_db.surveys";
@@ -129,28 +319,25 @@ public class DatabaseAccess {
 			System.out.println(e);
 		}
 		
-		String query2 = "DROP TABLE " + survey; //Drop survey's table
+		String query2 = "DELETE FROM questions WHERE survey_name = ?";
+		stmt = conn.prepareStatement(query2);
+		stmt.setString(1, survey);
+		
 		try {
-			stmt.executeUpdate(query2);
+			stmt.executeUpdate(); 
 		}catch(SQLException e) {
 			System.out.println(e);
 		}
 		
-		String query3 = "DROP TABLE " + survey + "_answers"; //Drop survey's table
-		try {
-			stmt.executeUpdate(query3);
-		}catch(SQLException e) {
-			System.out.println(e);
-		}finally {
-			if(conn != null) {
-				conn.close();
-			}
+		if(conn != null) {
+			conn.close();
 		}
+		
 		return "";
 	}
 	
-	//Create a survey but check for duplicates before
-	public String addSurvey(String name, String message) throws SQLException {
+	//Create a survey
+	public String addSurvey(String name, String message, String end_message, String end_code) throws SQLException {
 		
 		/* Checks if `name` is a duplicate entry */
 		String queryEntryCheck = "SELECT * FROM surveys WHERE survey_name = ?";
@@ -175,45 +362,32 @@ public class DatabaseAccess {
 		
 		
 		/* Create a survey entry */
-		String query = "INSERT INTO surveys VALUES(NULL, ?, ?)";
+		String query = "INSERT INTO surveys VALUES(NULL, ?, ?, ?, ?)";
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, name);
 		stmt.setString(2, message);
+		stmt.setString(3, end_message);
+		
+		if(end_code.equals("true")) {
+			stmt.setInt(4, 1);
+		} 
+		else {
+			stmt.setInt(4, 0);
+		}
 		
 		try {
 			System.out.println("Line 48: " + query);
 			stmt.executeUpdate();
-		}catch(SQLException e) {
+		}
+		catch(SQLException e) {
 			System.out.println(e);
 		}
-		
-		/* Create a table for the survey questions*/
-		String query2 = "CREATE TABLE " + name + "(question_id INT PRIMARY KEY AUTO_INCREMENT NOT NULL, question_mc BOOL, question VARCHAR(60), answers VARCHAR(100))";
-		
-		try {
-			System.out.println("Line 57: " + query2);
-			stmt.executeUpdate(query2);
-		}catch(SQLException e) {
-			System.out.println(e);
-		}
-		
-		/* Create table for survey answers */
-		Statement stmt2 = conn.createStatement();
-		//CHANGE MADE: July 11, 2020. Changing Table Structure. Old table; question_id, answer_id were INT. Now they are VARCHAR.
-		String query3 = "CREATE TABLE " + name.toLowerCase() + "_answers(entry_id INT PRIMARY KEY AUTO_INCREMENT, question_id VARCHAR(8), answer_id VARCHAR(8) NOT NULL, survey VARCHAR(60) NOT NULL, user_id VARCHAR(60), time datetime NOT NULL)";
-		
-		try {
-			System.out.println("Line 97: " + query3);
-			stmt2.executeUpdate(query3);
-		}catch(SQLException e) {
-			System.out.println(e);
-		}finally {
+		finally {
 			if(conn != null) {
 				conn.close();
 			}
 		}
-		
 		
 		return "SUCCESS";
 	}
@@ -248,14 +422,16 @@ public class DatabaseAccess {
 			
 			int loop_counter = 0;
 			while(rs.next()) {
-				surveys[loop_counter][0] = rs.getString(2);
-				surveys[loop_counter][1] = rs.getString(3);
+				surveys[loop_counter][0] = rs.getString(2); //Survey name
+				surveys[loop_counter][1] = rs.getString(3); //Survey message
 				
 				//These two variables are used for th:attr due to String limitations in Thymeleaf
 				surveys[loop_counter][2] = "survey_select('" + surveys[loop_counter][0] + "')";
 				surveys[loop_counter][3] = "survey_delete('" + surveys[loop_counter][0] + "')";
 				
 				loop_counter++;
+				
+				
 			}
 		} catch(SQLException e) {
 			System.out.println(e);
@@ -323,21 +499,28 @@ public class DatabaseAccess {
 	//Get all questions. Gives more information than just database values/
 	public String[][] question_answers(String survey) throws SQLException {
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
-		Statement stmt = conn.createStatement();
+		String query = "SELECT * FROM questions WHERE survey_name = ?";
+		
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
 		ResultSet rs;
+		
+		PreparedStatement stmt;
+		
+		
 		
 		//Finding rows of result
 		int size = 0;
 		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM survey_db." + survey);
+			
+			stmt = conn.prepareStatement(query);
+			stmt.setString(1, survey);
+			rs = stmt.executeQuery();
 			
 			//Find rows in table
 			while(rs.next()) {
 				size++;
 			}
-			
+			System.out.println("Array Size is: " + size);
 		} catch(SQLException e) {
 			System.out.println(e);
 		}
@@ -346,15 +529,17 @@ public class DatabaseAccess {
 		
 		//Appending table values into 2D array
 		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM survey_db." + survey);
+			
+			stmt = conn.prepareStatement(query);
+			stmt.setString(1, survey);
+			rs = stmt.executeQuery();
 			
 			int loop_counter = 0;
 			while(rs.next()) {
 				questions[loop_counter][0] = rs.getString(1);
-				questions[loop_counter][1] = rs.getString(2);
-				questions[loop_counter][2] = rs.getString(3);
-				questions[loop_counter][3] = rs.getString(4);
+				questions[loop_counter][1] = rs.getString(3);
+				questions[loop_counter][2] = rs.getString(4);
+				questions[loop_counter][3] = rs.getString(5);
 				
 				questions[loop_counter][4] = questions[loop_counter][0] + "_question"; //This variable is used to identify the question being referenced in /create_survey
 				questions[loop_counter][5] = questions[loop_counter][0] + "_answer";
@@ -369,48 +554,73 @@ public class DatabaseAccess {
 			}
 		}
 		
+		System.out.println("---------------RESULTS FROM QUESTION_ANSWERS----------------");
+		
+		for(int a = 0; a < questions.length; a++) {
+			
+			for(int b = 0; b < questions[a].length; b++) {
+				System.out.println(questions[a][b]);
+			}
+			System.out.println("------------------------");
+		}
 		return questions;
 		
 	}
 	
 	//Submit an answer selected in a survey
-	public String submit_answer(String user_id, String question, String answer, String survey) throws SQLException {
+	public String submit_answer(String ip_address, String question, String answer, String code, String survey) throws SQLException {
 		
-		String query = "INSERT INTO survey_db." + survey + "_answers VALUES(NULL, '" + question + "', '" + answer + "', '" + survey + "', '" + user_id + "', NOW());";
+		//String q = "INSERT INTO survey_db." + survey + "_answers VALUES(NULL, '" + question + "', '" + answer + "', '" + survey + "', '" + user_id + "', NOW());";
+		String query = "INSERT INTO survey_db.answers VALUES(NULL, ?, ?, ?, ?, ?, NOW())";
 		System.out.println(query);
 		
 		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
-		Statement stmt = conn.createStatement();
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		System.out.println(code);
+		
+		stmt.setString(1, survey);
+		stmt.setString(2, question);
+		stmt.setString(3, answer);
+		stmt.setString(4, ip_address);
+		stmt.setString(5, code);
+		
 		
 		try {
-			stmt.executeUpdate(query);	
+			stmt.executeUpdate();	
 		}catch(SQLException e) {
 			System.out.println(e);
 			return "SQL_ERROR";
-		}finally {
-			if(conn != null) {
-				conn.close();
-			}
 		}
+		
+		
 		
 		return "SUCCESS";
 	}
 	
 	//Submit a new question
 	public String newQuestion(String survey, String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
-		String query = "INSERT INTO survey_db." + survey + " VALUES(NULL, 1, '" + question + "', " + "'" + answer1 + "|" + answer2 + "|"  + answer3 + "|" + answer4 + "|" + answer5 + "|" + answer6 + "');";
+		
+		String query = "INSERT INTO questions VALUES(NULL, ?, ?, ?, ?)";
 		System.out.println("Line 249: " + query);
 		
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		PreparedStatement stmt = conn.prepareStatement(query);
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
-		Statement stmt = conn.createStatement();
+		stmt.setString(1, survey);
+		stmt.setString(2, "MC");   //Temporarily multiple choice is the only question type
+		stmt.setString(3, question);
+		stmt.setString(4, answer1 + "|" + answer2 + "|" + answer3 + "|" + answer4 + "|" + answer5 + "|" + answer6); //Currently up to 6 MC options are available
+		
 		
 		try {
-			stmt.executeUpdate(query);
-		} 	catch(SQLException e) {
+			stmt.executeUpdate();
+		} 	
+		catch(SQLException e) {
 			System.out.println(e);
 			return "SQL_ERROR";
-		} finally {
+		} 
+		finally {
 			if(conn != null) {
 				conn.close();
 			}
@@ -420,16 +630,20 @@ public class DatabaseAccess {
 		return "SUCCESS";
 	}
 	
-	public String[][] getAnswers(String survey) throws SQLException {
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
-		Statement stmt = conn.createStatement();
+	//Retrieves all questions in a survey
+	public String[][] getQuestions(String survey) throws SQLException {
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		PreparedStatement stmt;
 		ResultSet rs;
+		String query = "SELECT * FROM questions WHERE survey_name = ?";
 		
 		//Finding rows of result
 		int size = 0;
 		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM survey_db." + survey);
+			
+			stmt = conn.prepareStatement(query);
+			stmt.setString(1, survey);
+			rs = stmt.executeQuery();
 			
 			//Find rows in table
 			while(rs.next()) {
@@ -444,16 +658,16 @@ public class DatabaseAccess {
 		
 		//Appending table values into 2D array
 		try {
-			stmt = conn.createStatement();
-			rs = stmt.executeQuery("SELECT * FROM survey_db." + survey);
+			stmt = conn.prepareStatement(query);
+			stmt.setString(1, survey);
+			rs = stmt.executeQuery();
 			
 			int loop_counter = 0;
 			while(rs.next()) {
-				questions[loop_counter][0] = rs.getString(1);
-				questions[loop_counter][1] = rs.getString(2);
-				questions[loop_counter][2] = rs.getString(3);
-				questions[loop_counter][3] = rs.getString(4);
-				
+				questions[loop_counter][0] = rs.getString(4); //The question
+				questions[loop_counter][1] = rs.getString(5); //The answers
+				questions[loop_counter][2] = rs.getString(3); //The question type
+			
 				loop_counter++;
 			}
 		} catch(SQLException e) {
@@ -461,8 +675,7 @@ public class DatabaseAccess {
 		}
 		
 		
-		
-		String[][] question_answers = new String[size][7]; //This array will be passed into Thymeleaf with the question and answers
+		String[][] question_answers = new String[size][8]; //This array will be passed into Thymeleaf with the question and answers
 		String[] temp_answers = new String[6]; //Temporary holder for when String or answers will be split
 		
 		
@@ -470,14 +683,15 @@ public class DatabaseAccess {
 			
 			for(int column = 0; column < 2; column++) {
 				
-				question_answers[row][0] = questions[row][2]; //Make the first index of the sub-array the question
-				temp_answers = questions[row][3].split("\\|"); //Splitting up string of answers into an array
+				question_answers[row][0] = questions[row][2]; //The question type
+				question_answers[row][1] = questions[row][0]; //The question 
+				temp_answers = questions[row][1].split("\\|");	 //Splitting up string of answers into an array
 				
-				for(int answers = 1; answers < 7; answers++) {
+				for(int answers = 2; answers < 8; answers++) {
 					
 					//Try Catch will ignore out of bounds exceptions if temp_answers is too small
 					try {
-						question_answers[row][answers] = temp_answers[answers-1]; //Adding answers to the array;
+						question_answers[row][answers] = temp_answers[answers - 2]; //Adding answers to the array;
 					} catch(ArrayIndexOutOfBoundsException e) {
 						System.out.println(e);
 					}
@@ -498,5 +712,4 @@ public class DatabaseAccess {
 		
 		return question_answers;
 	}
-
 }

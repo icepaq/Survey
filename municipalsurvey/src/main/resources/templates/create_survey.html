@@ -1,7 +1,7 @@
 <html>
 <head>
     <title>Create Survey</title>
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="jquery-3.5.1.js"></script>
 
     <style>
         /* Text Formatting */
@@ -35,6 +35,22 @@
             font-size: 16px;
         }
 
+        .css_button {
+            background-color: white;
+            border-color: black;
+            color: black;
+
+            text-align: center;
+            text-decoration: none;
+
+            display: inline-block;
+            cursor: pointer;
+
+            padding: 10px 50px;
+
+            font-size: 16px;
+        }
+
         .edit_question {
             background-color: white;
             border-color: black;
@@ -51,7 +67,32 @@
             font-size: 16px;
         }
 
+        .edit_question_formatting {
+            background-color: white;
+            border-color: black;
+            color: black;
+
+            text-align: center;
+            text-decoration: none;
+
+            display: inline-block;
+            cursor: pointer;
+
+            padding: 10px 50px;
+
+            font-size: 16px;
+        }
+
         #add_question {
+            border-style: solid;
+            border-color: black;
+            border-width: 1px;
+
+            padding: 20px;
+            width: 320px;
+        }
+
+        #end_message {
             border-style: solid;
             border-color: black;
             border-width: 1px;
@@ -87,6 +128,20 @@
 <body>
     <h1>Survey Settings</h1>
     <h3 id="survey_name" th:text="${survey}"></h3>
+
+    <div id="end_message">
+    <p>End Message</p>
+    <table>
+        <tr>
+            <td>
+                <p> <input type="text" id="EndMessageInput"/> </p>
+            </td>
+        </tr>
+    </table>
+    <button id="updateEndMessage" class="css_button">EDIT END MESSAGE</button>
+
+    </div>
+
     <div id="add_question">
     <h2>Add Question</h3>
     <table>
@@ -199,8 +254,8 @@
                 <td><p>Option 6: </p></td><td><input type="text" id="edit_answer6"/></td>
             </tr>
         </table>
-        <button class="edit_question button_margin" id="submit_question_changes">Submit Changes</button> <br>
-        <button class="edit_question button_margin" id="delete_question">Delete Question</button>
+        <button class="button_margin edit_question_formatting" id="submit_question_changes">Submit Changes</button> <br>
+        <button class="button_margin edit_question_formatting" id="delete_question">Delete Question</button>
     </div>
     </div>
     <script>
@@ -219,7 +274,9 @@
                 var answer5 = $("#answer5").val();
                 var answer6 = $("#answer6").val();
 
-                $.get("/submit_changes", {survey: survey, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6});
+                $.get("/submit_changes", {survey: survey, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6}).done(function() {
+                    location.reload();
+                });
             });
 
             $(".edit_question").click(function() {
@@ -257,12 +314,23 @@
                 var answer5 = $("#edit_answer5").val();
                 var answer6 = $("#edit_answer6").val();
 
-                $.get("/submit_question_changes", {survey: survey, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6, question_id: question_id});
+                $.get("/submit_question_changes", {survey: survey, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6, question_id: question_id}).done(function() {
+                    location.reload();
+                });
             });
 
             //Delete a question
             $("#delete_question").click(function() {
-                $.get("/delete_question", {question_id: question_id});
+                $.get("/delete_question", {question_id: question_id}).done(function() {
+                    location.reload();
+                });
+            });
+
+            $("#updateEndMessage").click(function() {
+                var survey = $("#survey_name").text();
+                var message = $("#EndMessageInput").val();
+
+                $.get("/updateEndMessage", {survey: survey, message: message});
             });
         });
     </script>

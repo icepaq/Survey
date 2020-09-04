@@ -11,6 +11,22 @@
             color: white;
         }
 
+        button {
+            color: white;
+            background-color: #00081c;
+            padding: 7px 20px;
+
+            font-size: 16px;
+
+            border-style: solid;
+            border-color: white;
+            border-width: 1px;
+            border-radius: 3px;
+
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         .question_wrapper {
             display: none;
         }
@@ -27,6 +43,21 @@
         .answer:hover {
             background-color: #001447;
         }
+        
+        .textAnswer {
+            font-size: 16px;
+            color: white;
+            padding: 10px;
+            
+            border-style: solid;
+            border-color: white;
+            border-width: 1px;
+            border-radius: 3px;
+
+            width: 100%;
+
+            background-color: #00081c;
+        }
 
         .wrapper {
             width: 40%;
@@ -42,6 +73,9 @@
 
         #end {
             display: none;
+            text-align: center;
+            margin: auto;
+            
         }
 
         #survey {
@@ -55,59 +89,93 @@
     <div id="survey" th:text="${survey}"></div>
     <div class="wrapper">
     <div class="question_wrapper" th:each="question: ${questions}">
-        <div class="question">
-            <h3 th:text="${question[0]}"></h3>
+        <div th:if="${question[0]} == 'MC'" class="question_mc">
+            <div class="question">
+                <h3 class="question_text" th:text="${question[1]}"></h3>
+            </div>
+
+            <div th:if="${question[2]} != null"  class="answer" onclick="answer(0)">
+                <h5 class="answer_text" th:text="${question[2]}"></h5>
+            </div>
+
+            <div th:if="${question[3]} != null"  class="answer" onclick="answer(1)">
+                <h5 class="answer_text" th:text="${question[3]}"></h5>
+            </div>
+
+            <div th:if="${question[4]} != null"  class="answer" onclick="answer(2)">
+                <h5 class="answer_text" th:text="${question[4]}"></h5>
+            </div>
+
+            <div th:if="${question[5]} != null"  class="answer" onclick="answer(3)">
+                <h5 class="answer_text" th:text="${question[5]}"></h5>
+            </div>
+
+            <div th:if="${question[6]} != null"  class="answer" onclick="answer(4)">
+                <h5 class="answer_text" th:text="${question[6]}"></h5>
+            </div>
+
+            <div th:if="${question[7]} != null"  class="answer" onclick="answer(5)">
+                <h5 class="answer_text" th:text="${question[7]}"></h5>
+            </div>
         </div>
 
-        <div th:if="${question[1]} != null"  class="answer" onclick="answer(0)">
-            <h5 th:text="${question[1]}"></h5>
-        </div>
+        <div th:if="${question[0] == 'LONG'}">
+            <div class="question">
+                <h3 th:text="${question[1]}"></h3>
+            </div>
 
-        <div th:if="${question[2]} != null"  class="answer" onclick="answer(1)">
-            <h5 th:text="${question[2]}"></h5>
-        </div>
+            <div class="answer">
+                <input type="text" class="textAnswer"/>
+            </div>
 
-        <div th:if="${question[3]} != null"  class="answer" onclick="answer(2)">
-            <h5 th:text="${question[3]}"></h5>
-        </div>
-
-        <div th:if="${question[4]} != null"  class="answer" onclick="answer(3)">
-            <h5 th:text="${question[4]}"></h5>
-        </div>
-
-        <div th:if="${question[5]} != null"  class="answer" onclick="answer(4)">
-            <h5 th:text="${question[5]}"></h5>
-        </div>
-
-        <div th:if="${question[6]} != null"  class="answer" onclick="answer(5)">
-            <h5 th:text="${question[6]}"></h5>
+            <button class="textSubmit">Next Question</button>
         </div>
     </div>
 
     <div id="end">
-        <h3>Thank you for finishing!</h3>
-        <h4 th:text="${code}"></h4>
+        <h3 th:text="${end_message}"></h3>
+        <h3 th:text="${code}"></h3>
     </div>
     </div>
 
+    <div id="hidden" style="display: none;">
+        <span th:text="${code}" id="code"></span>
+    </div>
     <script>
         var question_order = 0; //Which question is currently visible
         var questions = document.getElementsByClassName("question_wrapper"); //List of question elements
-        var survey = document.getElementById("survey").innerHTML;
+        var survey = document.getElementById("survey").innerHTML; //Survey name
+        var code = document.getElementById("code").innerHTML; //Client's assigned code
 
+        questions[0].classList.add("selected");
         //Called when an answer is selected
         function answer(answer_id) {
-            $.get("/submit_answer", {question: question_order, answer: answer_id, survey: survey}); //Submit the answer to the server
+
+            var question = document.getElementsByClassName("question_wrapper");
+
+            var active_question = document.getElementsByClassName("question_text");
+            var selected_answer = question[question_order].getElementsByClassName("answer_text")[answer_id];
             
+            console.log(active_question[question_order].innerHTML);
+            console.log(selected_answer.textContent);
+
+            $.get("/submit_answer", {question: active_question[question_order].innerHTML, answer: selected_answer.textContent, code: code, survey: survey}); //Submit the answer to the server
+            
+            //Preperation to display next question
             $(questions[question_order]).fadeOut();
-            question_order += 1; //Increment the question order
+            question[question_order].classList.remove("selected"); 
+            question_order += 1; 
 
             //If the last question has been answered, show the finish message. Otherwise display the next question.
             if(question_order >= questions.length) {
-                document.getElementById("end").style.display = "block";
+                setTimeout(function(){ 
+                    document.getElementById("end").style.display = "block";
+                }, 500);
+                $.get("/surveyComplete", {code: code});
             } else {
                 setTimeout(function() {
                     $(questions[question_order]).fadeIn();
+                    questions[question_order].classList.add("selected");
                 }, 500);
             }
         }
@@ -115,7 +183,32 @@
         $(document).ready(function() {
             //Fadein first question
             $(questions).first().fadeIn();
-            
+
+            $(".textSubmit").click(function() {
+
+                var answer = document.getElementsByClassName("selected")[0];
+                var textBox = answer.getElementsByClassName("textAnswer")[0];
+                console.log("Long Answer: " + $(textBox).val());
+                
+                $.get("/submit_answer", {question: question_order, answer: $(textBox).val(), code: code, survey: survey});
+                
+                answer.classList.remove("selected");
+                question_order += 1;
+                $(answer).fadeOut();
+
+                //If the last question has been answered, show the finish message. Otherwise display the next question.
+                if(question_order >= questions.length) {
+                    setTimeout(function(){
+                        document.getElementById("end").style.display = "block";
+                    }, 500);
+                    $.get("/surveyComplete", {code: code});
+                } else {
+                    setTimeout(function() {
+                        $(questions[question_order]).fadeIn();
+                        questions[question_order].classList.add("selected");
+                    }, 500);
+                }
+            });
         });
     </script>
 </body>

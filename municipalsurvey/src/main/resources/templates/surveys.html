@@ -3,10 +3,21 @@
     <title>Surveys</title>
 
     <style>
+        h1, h2, p, span {
+            font-family: sans-serif;
+        }
         th, td{
             padding: 10px;
 
             min-width: 100px;
+        }
+
+        tr {
+            transition: 1s;
+        }
+
+        tr:hover {
+            background-color: #e6fcff;
         }
 
         span {
@@ -24,7 +35,7 @@
             display: inline-block;
             cursor: pointer;
 
-            padding: 10px 50px;
+            padding: 5px 50px;
         }
 
         #surveys_table {
@@ -39,7 +50,7 @@
         #new_survey {
             margin-top: 20px;
             padding: 10px;
-            width: 400px;
+            width: 470px;
 
             border-style: solid;
             border-color: rgb(119, 119, 119);
@@ -51,9 +62,10 @@
 </head>
 
 <body>
-    <h1>Survey Management</h1>
+    <center> <h1>Survey Management</h1> </center>
+
     <div id="surveys_table">
-        <h2>Surveys</h2>
+        <center> <h2>Surveys</h2> </center>
         <table>
             <tr th:each="s: ${surveys}">
                 <td> <span th:text="${s[0]}"></span> </td>
@@ -64,7 +76,7 @@
     </div>
 
     <div id="new_survey">
-        <h2>New Survey</h2>
+    <center> <h2>New Survey</h2> </center>
         <table>
             <tr>
                 <td>
@@ -74,14 +86,34 @@
                     <input id="survey_name"/>
                 </td>
             </tr>
+
             <tr>
                 <td>
-                    Survey Message:
+                    Survey Title:
                 </td>
                 <td>
                     <input id="survey_message"/>
                 </td>
             </tr>
+
+            <tr>
+                <td>
+                    Survey End Message:
+                </td>
+                <td>
+                    <input id="survey_end_message"/>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    Survey Finish Code:
+                </td>
+                <td>
+                    <input type="checkbox" id="survey_end_code"/>
+                </td>
+            </tr>
+
             <tr>
                 <td>
                     <button onclick="new_survey()">Create Survey</button>
@@ -96,19 +128,29 @@
     }
 
     function new_survey() {
-        $.get("/new_survey", {survey_name: $("#survey_name").val(), survey_message: $("#survey_message").val()});
-    }   
+        var survey_name = $("#survey_name").val();
+        var survey_message = $("#survey_message").val();
+        var survey_end_message = $("#survey_end_message").val();
+        var survey_end_code = $("#survey_end_code").prop("checked");
+        
+        $.get("/new_survey", {survey_name: survey_name, survey_message: survey_message, survey_end_message: survey_end_message, survey_end_code: survey_end_code}).done(function() {
+            location.reload();
+        });
+    }
 
     function survey_delete(survey) {
-        $.get("/delete_survey", {survey: survey});
+        $.get("/delete_survey", {survey: survey}).done(function() {
+            location.reload();
+        });
     }
 
     $(document).ready(function() {
         $("#submit_new_survey").click(function() {
-            var survey_name = $("#survey_name").val();
-            var survey_message = $("#survey_message").val();
+            
+        });
 
-            $.get("/new_survey", {survey_name: survey_name, survey_message: survey_message});
+        $("#survey_end_code").click(function() {
+            $.get("/value", {value: $("#survey_end_code").prop("checked")});
         });
     });
 </script>
