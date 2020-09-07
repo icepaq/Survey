@@ -13,6 +13,104 @@ public class DatabaseAccess {
 	
 	private int temp_index; //See exists()
 	
+	public String getQuestions() throws SQLException {
+		
+		String query = "SELECT * FROM questions ORDER BY survey_name";
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		ResultSet rs;
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		String []surveys;
+		
+		
+		int size = 0;
+		int survey_counter = 0;
+		int counter = 0;
+		
+		try {
+			
+			//Amount of question entries
+			rs = stmt.executeQuery();
+			while(rs.next()) {
+				size++;
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		surveys = new String[size];
+		
+		try {
+			//Get names of all surveys
+			rs = stmt.executeQuery();
+			
+			while(rs.next()) {
+				
+				//Making sure duplicate entries are not added.
+				if(counter == 0) {
+					surveys[counter] = rs.getString(2);
+				}
+				else if(rs.getString(2).equals(surveys[counter-1])){
+					System.out.println("DBAccess.getQuestions(): Duplicate entry");
+				}
+				else {
+					surveys[counter] = rs.getString(2);
+				}
+				counter++;
+			}
+			
+			//Find real number of surveys
+			for(int i = 0; i < surveys.length; i++) {
+				
+				if(surveys[i] == null) {
+					survey_counter++;
+				}
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		String [][]questions = new String[survey_counter][counter]; 
+		
+		//Assigning questions
+		try {
+			
+			int question_counter = 0;
+			String query2 = "SELECT * FROM questions WHERE survey_name = ?";
+			PreparedStatement stmt2 = conn.prepareStatement(query2);
+			
+			for(int i = 0; i < questions.length; i++) {
+				
+				stmt2.setString(1, surveys[i]);
+				
+				rs = stmt2.executeQuery();
+				while(rs.next()) {
+					
+					questions[i][question_counter] = rs.getString(4);
+					question_counter++;
+				}
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		finally {
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		
+		for(int i = 0; i < questions.length; i++) {
+			
+			for(int a = 0; a < questions[i].length; a++) {
+				
+				System.out.println(questions[i][a]);
+			}
+		}
+		return "";
+	}
 	
 	//Sets the code completion column to true
 	public String surveyComplete(String code) throws SQLException {

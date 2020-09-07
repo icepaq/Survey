@@ -44,6 +44,7 @@ public class WebController {
 		
 		model.addAttribute("surveys", a.surveys());
 		model.addAttribute("results", a.surveyResults());
+		a.getQuestions();
 		return "results";
 	}
 	
