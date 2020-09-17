@@ -75,7 +75,15 @@ public class WebController {
 	@RequestMapping(value = "/")
 	public String index(Model model) throws SQLException{
 		
-		model.addAttribute("surveys", a.getSurveys());
+		try {
+			
+			model.addAttribute("surveys", a.getSurveys());
+		}
+		catch(SQLException e) {
+			
+			System.out.println(e);
+			return "mysqlerror";
+		}
 		
 		return "index";	
 	}

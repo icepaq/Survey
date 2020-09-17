@@ -1,19 +1,19 @@
 version: "3.7"
 
+
+networks: 
+    default:
+        external: 
+            name: surveyapp-network
+    
 services: 
     municipalsurvey:
         image: openjdk:8-jdk-alpine
         ports: 
             - 8080:8080
+        networks: 
+            - default
         tty: true
-
-    mysql:
-        image: mysql:latest
-        volumes:
-            - mysql-volume:/var/lib/mysql
-        environment: 
-            MYSQL_ROOT_PASSWORD: Java_test.
-            MYSQL_DATABASE: survey_db
-
+        
 volumes: 
     mysql-volume:
