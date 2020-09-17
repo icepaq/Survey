@@ -13,10 +13,12 @@ public class DatabaseAccess {
 	
 	private int temp_index; //See exists()
 	
+	Codes codes = new Codes();
+	
 	public String getQuestions() throws SQLException {
 		
 		String query = "SELECT * FROM questions ORDER BY survey_name";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		ResultSet rs;
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
@@ -116,7 +118,7 @@ public class DatabaseAccess {
 	public String surveyComplete(String code) throws SQLException {
 		
 		String query = "UPDATE codes SET complete = true WHERE code  = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		ResultSet rs;
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
@@ -141,7 +143,7 @@ public class DatabaseAccess {
 	public String getEndCode(String survey, String ip_address) throws SQLException {
 		
 		String query = "SELECT * FROM surveys WHERE survey_name = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		ResultSet rs;
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
@@ -193,7 +195,7 @@ public class DatabaseAccess {
 	public String updateEndMessage(String survey, String message) throws SQLException {
 		
 		String query = "UPDATE surveys SET survey_end_message = ? WHERE survey_name = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, message);
@@ -217,7 +219,7 @@ public class DatabaseAccess {
 	public String getEndMessage(String survey) throws SQLException {
 		
 		String query = "SELECT survey_end_message FROM surveys WHERE survey_name = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		ResultSet rs;
 		
@@ -243,7 +245,7 @@ public class DatabaseAccess {
 	
 	public String[][][] surveyResults() throws SQLException {
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		ResultSet rs;
 		Statement stmt = conn.createStatement();
 		
@@ -365,7 +367,7 @@ public class DatabaseAccess {
 	public String[][] surveys() throws SQLException {
 		
 		String query = "SELECT * FROM survey_db.surveys";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		ResultSet rs;
 		Statement stmt = conn.createStatement();
 		
@@ -406,7 +408,7 @@ public class DatabaseAccess {
 	//Deletes a survey by removing the survey entry from the surveys table and, dropping the survey's table.
 	public String deleteSurvey(String survey) throws SQLException {
 		String query = "DELETE FROM surveys WHERE survey_name = ?"; //Delete Survey Entry
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, survey);
@@ -439,7 +441,7 @@ public class DatabaseAccess {
 		
 		/* Checks if `name` is a duplicate entry */
 		String queryEntryCheck = "SELECT * FROM surveys WHERE survey_name = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		PreparedStatement EntryCheckStatement = conn.prepareStatement(queryEntryCheck);
 		ResultSet rs;
 		
@@ -494,7 +496,7 @@ public class DatabaseAccess {
 	public String[][] getSurveys() throws SQLException {
 		
 		String query = "SELECT * FROM survey_db.surveys";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", codes.db_password);
 		Statement stmt = conn.createStatement();
 		ResultSet rs;
 		
@@ -546,7 +548,7 @@ public class DatabaseAccess {
 	public String deleteQuestion(String question_id) throws SQLException {
 		
 		String query = "DELETE FROM survey_db.questions WHERE question_id = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", codes.db_password);
 		
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
@@ -573,7 +575,7 @@ public class DatabaseAccess {
 		String query = "UPDATE survey_db." + survey + " SET question = ?, answers = ? WHERE question_id = ?";
 		System.out.println(query);
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, question);
@@ -599,7 +601,7 @@ public class DatabaseAccess {
 		
 		String query = "SELECT * FROM questions WHERE survey_name = ?";
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		ResultSet rs;
 		
 		PreparedStatement stmt;
@@ -672,7 +674,7 @@ public class DatabaseAccess {
 		String query = "INSERT INTO survey_db.answers VALUES(NULL, ?, ?, ?, ?, ?, NOW())";
 		System.out.println(query);
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "spring_user", codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		System.out.println(code);
@@ -702,7 +704,7 @@ public class DatabaseAccess {
 		String query = "INSERT INTO questions VALUES(NULL, ?, ?, ?, ?)";
 		System.out.println("Line 249: " + query);
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, survey);
@@ -730,7 +732,7 @@ public class DatabaseAccess {
 	
 	//Retrieves all questions in a survey
 	public String[][] getQuestions(String survey) throws SQLException {
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", "Java_test.");
+		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", "spring_user", codes.db_password);
 		PreparedStatement stmt;
 		ResultSet rs;
 		String query = "SELECT * FROM questions WHERE survey_name = ?";
