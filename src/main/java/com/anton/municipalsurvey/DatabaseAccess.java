@@ -15,10 +15,130 @@ public class DatabaseAccess {
 	
 	Codes codes = new Codes();
 	
+	public String[][][] questions() throws SQLException {
+		
+		System.out.println("QUESTIONS LIST: ");
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM questions WHERE survey_name = ?");
+		ResultSet rs;
+		
+		String[][] surveys = surveys();
+		int max_questions = 0;
+		int counter = 0;
+		
+		//Finding max amount 
+		for(int a = 0; a < surveys.length; a++) {
+			
+			stmt.setString(1, surveys[a][0]);
+			try {
+				
+				rs = stmt.executeQuery();
+				
+				counter = 0;
+				while(rs.next()) {
+					
+					counter++;	
+				}
+			}
+			catch(SQLException e) {
+				System.out.println(e);
+			}
+			
+			if(counter > max_questions) {
+				
+				max_questions = counter;
+			}
+		}
+		System.out.println("Total questions: " + max_questions);
+		
+		
+		String[][][] questions = new String[surveys.length][max_questions][2];
+		
+		PreparedStatement stmt2 = conn.prepareStatement("SELECT * FROM questions WHERE survey_name = ?");
+		for(int i = 0; i < surveys.length; i++) {
+			
+			
+			stmt2.setString(1, surveys[i][0]);
+			try {
+				
+				rs = stmt2.executeQuery();
+				
+				counter = 0;
+				while(rs.next()) {
+					
+					
+					questions[i][counter][0] = rs.getString(4);
+					questions[i][counter][1] = "graphupdate('" + questions[i][counter][0] + "')";
+					counter++;
+				}
+			}
+			catch(SQLException e) {
+				System.out.println(e);
+			}
+		}
+		
+		return questions;
+	}
+	
+	public String db() throws SQLException{
+		
+		String []queries = new String[5];
+		queries[0] = "CREATE DATABASE IF NOT EXISTS survey_db";
+		queries[1] = "CREATE TABLE IF NOT EXISTS survey_db.answers("
+				+ "entry_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+				+ "survey_name VARCHAR(20), "
+				+ "question VARCHAR(60), "
+				+ "answer VARCHAR(60), "
+				+ "user_id VARCHAR(60), "
+				+ "code VARCHAR(8), "
+				+ "time DATETIME NOT NULL"
+				+ ")";
+		queries[2] = "CREATE TABLE IF NOT EXISTS survey_db.codes("
+				+ "counter INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+				+ "code VARCHAR(8), "
+				+ "survey_name VARCHAR(60), "
+				+ "ip_address VARCHAR(16), "
+				+ "complete TINYINT(1), "
+				+ "date DATETIME"
+				+ ")";
+		queries[3] = "CREATE TABLE IF NOT EXISTS survey_db.questions("
+				+ "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+				+ "survey_name VARCHAR(20), "
+				+ "question_type VARCHAR(8), "
+				+ "question VARCHAR(60), "
+				+ "answers VARCHAR(128)"
+				+ ")";
+		queries[4] = "CREATE TABLE IF NOT EXISTS survey_db.surveys("
+				+ "id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, "
+				+ "survey_name VARCHAR(60), "
+				+ "survey_message VARCHAR(128), "
+				+ "survey_end_message VARCHAR(60), "
+				+ "code tinyint(1)"
+				+ ")";
+		
+		Connection conn = DriverManager.getConnection(codes.host, codes.db_username, codes.db_password);
+		
+		for(int i = 0; i < queries.length; i++) {
+			
+			PreparedStatement stmt = conn.prepareStatement(queries[i]);
+			
+			try {
+				
+				stmt.executeUpdate();
+			}
+			catch(SQLException e) {
+				
+				return "MYSQL ERROR";
+			}
+		}
+		
+		return "SUCCESS";
+	}
+	
 	public String getQuestions() throws SQLException {
 		
 		String query = "SELECT * FROM questions ORDER BY survey_name";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		ResultSet rs;
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
@@ -118,7 +238,7 @@ public class DatabaseAccess {
 	public String surveyComplete(String code) throws SQLException {
 		
 		String query = "UPDATE codes SET complete = true WHERE code  = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		ResultSet rs;
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
@@ -143,7 +263,7 @@ public class DatabaseAccess {
 	public String getEndCode(String survey, String ip_address) throws SQLException {
 		
 		String query = "SELECT * FROM surveys WHERE survey_name = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		ResultSet rs;
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
@@ -195,7 +315,7 @@ public class DatabaseAccess {
 	public String updateEndMessage(String survey, String message) throws SQLException {
 		
 		String query = "UPDATE surveys SET survey_end_message = ? WHERE survey_name = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, message);
@@ -219,7 +339,7 @@ public class DatabaseAccess {
 	public String getEndMessage(String survey) throws SQLException {
 		
 		String query = "SELECT survey_end_message FROM surveys WHERE survey_name = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		ResultSet rs;
 		
@@ -245,7 +365,7 @@ public class DatabaseAccess {
 	
 	public String[][][] surveyResults() throws SQLException {
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		ResultSet rs;
 		Statement stmt = conn.createStatement();
 		
@@ -366,8 +486,8 @@ public class DatabaseAccess {
 
 	public String[][] surveys() throws SQLException {
 		
-		String query = "SELECT * FROM survey_db.surveys";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		String query = "SELECT * FROM surveys";
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		ResultSet rs;
 		Statement stmt = conn.createStatement();
 		
@@ -408,7 +528,7 @@ public class DatabaseAccess {
 	//Deletes a survey by removing the survey entry from the surveys table and, dropping the survey's table.
 	public String deleteSurvey(String survey) throws SQLException {
 		String query = "DELETE FROM surveys WHERE survey_name = ?"; //Delete Survey Entry
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, survey);
@@ -441,7 +561,7 @@ public class DatabaseAccess {
 		
 		/* Checks if `name` is a duplicate entry */
 		String queryEntryCheck = "SELECT * FROM surveys WHERE survey_name = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		PreparedStatement EntryCheckStatement = conn.prepareStatement(queryEntryCheck);
 		ResultSet rs;
 		
@@ -495,8 +615,8 @@ public class DatabaseAccess {
 	//Get all surveys
 	public String[][] getSurveys() throws SQLException {
 		
-		String query = "SELECT * FROM survey_db.surveys";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", codes.db_username, codes.db_password);
+		String query = "SELECT * FROM surveys";
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		Statement stmt = conn.createStatement();
 		ResultSet rs;
 		
@@ -601,7 +721,7 @@ public class DatabaseAccess {
 		
 		String query = "SELECT * FROM questions WHERE survey_name = ?";
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		ResultSet rs;
 		
 		PreparedStatement stmt;
@@ -671,10 +791,10 @@ public class DatabaseAccess {
 	public String submit_answer(String ip_address, String question, String answer, String code, String survey) throws SQLException {
 		
 		//String q = "INSERT INTO survey_db." + survey + "_answers VALUES(NULL, '" + question + "', '" + answer + "', '" + survey + "', '" + user_id + "', NOW());";
-		String query = "INSERT INTO survey_db.answers VALUES(NULL, ?, ?, ?, ?, ?, NOW())";
+		String query = "INSERT INTO answers VALUES(NULL, ?, ?, ?, ?, ?, NOW())";
 		System.out.println(query);
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		System.out.println(code);
@@ -699,16 +819,16 @@ public class DatabaseAccess {
 	}
 	
 	//Submit a new question
-	public String newQuestion(String survey, String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
+	public String newQuestion(String survey, String question_type, String question, String answer1, String answer2, String answer3, String answer4, String answer5, String answer6) throws SQLException {
 		
 		String query = "INSERT INTO questions VALUES(NULL, ?, ?, ?, ?)";
 		System.out.println("Line 249: " + query);
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, survey);
-		stmt.setString(2, "MC");   //Temporarily multiple choice is the only question type
+		stmt.setString(2, question_type);   //Temporarily multiple choice is the only question type
 		stmt.setString(3, question);
 		stmt.setString(4, answer1 + "|" + answer2 + "|" + answer3 + "|" + answer4 + "|" + answer5 + "|" + answer6); //Currently up to 6 MC options are available
 		
@@ -732,7 +852,7 @@ public class DatabaseAccess {
 	
 	//Retrieves all questions in a survey
 	public String[][] getQuestions(String survey) throws SQLException {
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/survey_db", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		PreparedStatement stmt;
 		ResultSet rs;
 		String query = "SELECT * FROM questions WHERE survey_name = ?";

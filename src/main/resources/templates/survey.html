@@ -121,7 +121,7 @@
 
         <div th:if="${question[0] == 'LONG'}">
             <div class="question">
-                <h3 th:text="${question[1]}"></h3>
+                <h3 class="question_text" th:text="${question[1]}"></h3>
             </div>
 
             <div class="answer">
@@ -156,10 +156,10 @@
             var active_question = document.getElementsByClassName("question_text");
             var selected_answer = question[question_order].getElementsByClassName("answer_text")[answer_id];
             
-            console.log(active_question[question_order].innerHTML);
+            console.log("Active Qestion" + active_question[question_order].textContent);
             console.log(selected_answer.textContent);
 
-            $.get("/submit_answer", {question: active_question[question_order].innerHTML, answer: selected_answer.textContent, code: code, survey: survey}); //Submit the answer to the server
+            $.get("/submit_answer", {question: active_question[question_order].textContent, answer: selected_answer.textContent, code: code, survey: survey}); //Submit the answer to the server
             
             //Preperation to display next question
             $(questions[question_order]).fadeOut();
@@ -188,9 +188,11 @@
 
                 var answer = document.getElementsByClassName("selected")[0];
                 var textBox = answer.getElementsByClassName("textAnswer")[0];
+                var question = answer.getElementsByClassName("question_text")[0];
+                
                 console.log("Long Answer: " + $(textBox).val());
                 
-                $.get("/submit_answer", {question: question_order, answer: $(textBox).val(), code: code, survey: survey});
+                $.get("/submit_answer", {question: question.textContent, answer: $(textBox).val(), code: code, survey: survey});
                 
                 answer.classList.remove("selected");
                 question_order += 1;

@@ -1,0 +1,32 @@
+<html>
+<head>
+    <title>Database Setup</title>
+
+    <style>
+        body {
+            background-color: #00081c;
+        }
+
+        h1, h2, h3, h4, h5, p {
+            color: white;
+        }
+    </style>
+    <script src="jquery-3.5.1.js"></script>
+</head>
+
+<body>
+    <center>
+        <h1 class="dbsetup">MySQL Status: </h1> <h1 id="dbstatus"></h1>
+        <button onclick="dbsetup()">Setup</button>
+    </center>
+
+    <script>
+        function dbsetup() {
+            $.get("/db").done(function(data) {
+                document.getElementById("dbstatus").innerHTML = data;
+            }
+            );
+        }
+    </script>
+</body>
+</html>

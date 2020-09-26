@@ -17,6 +17,18 @@ public class WebController {
 	
 	DatabaseAccess a = new DatabaseAccess();
 	
+	@RequestMapping(value = "/db")
+	@ResponseBody
+	public String db() throws SQLException {
+		return a.db();
+	}
+	
+	@RequestMapping(value = "/dbsetup")
+	public String dbsetup() { 
+		
+		return "dbsetup";
+	}
+	
 	@RequestMapping(value = "/surveyComplete")
 	@ResponseBody
 	public String surveyComplete(@RequestParam String code) throws SQLException {
@@ -44,7 +56,8 @@ public class WebController {
 		
 		model.addAttribute("surveys", a.surveys());
 		model.addAttribute("results", a.surveyResults());
-		a.getQuestions();
+		model.addAttribute("questions", a.questions());
+		//a.getQuestions();
 		return "results";
 	}
 	
@@ -121,9 +134,9 @@ public class WebController {
 	//Processing New Questions
 	@RequestMapping(value = "/submit_changes")
 	@ResponseBody
-	public String submit_changes(@RequestParam String survey, @RequestParam String question, @RequestParam String answer1, @RequestParam String answer2, @RequestParam String answer3, @RequestParam String answer4, @RequestParam String answer5, @RequestParam String answer6) throws SQLException {
+	public String submit_changes(@RequestParam String survey, @RequestParam String question_type, @RequestParam String question, @RequestParam String answer1, @RequestParam String answer2, @RequestParam String answer3, @RequestParam String answer4, @RequestParam String answer5, @RequestParam String answer6) throws SQLException {
 		
-		return a.newQuestion(survey, question, answer1, answer2, answer3, answer4, answer5, answer6);
+		return a.newQuestion(survey, question_type, question, answer1, answer2, answer3, answer4, answer5, answer6);
 	}
 	
 	//Submit Answer

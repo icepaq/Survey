@@ -94,7 +94,14 @@
         .active:hover {
             background-color: rgb(0, 107, 195);
         }
+
+        .questions_list {
+            display: block;
+        }
     </style>
+
+    <script src="https://code.jscharting.com/latest/jscharting.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
     <h1 class="header">Survey Data</h1>
@@ -119,57 +126,129 @@
                 </tr>
             </div>
         </table>
-
-        <div class="questions_filter"></div>
-        <div class="graph_wrapper">
-            <div class="graph">
-                <div class="bar" th:each="bars: ${tables}" th:if="${bars[0]} != null"></div>
-            </div>
-            <div class="labels">
-                <div class="label" th:each="bars: ${tables}" th:if="${bars[0]} != null"></div>
-            </div>
+    </div>
+    
+    <div id="questionslist_wrapper">
+        <div class="questionslist" th:each="questionset: ${questions}">
+            <ul>
+                <div class="questions" th:each="question: ${questionset}">
+                    <li class="q" th:text="${question[0]}" th:attr="onclick=${question[1]}"></li>
+                    
+                </div>  
+            </ul>
         </div>
     </div>
+    
+    <div id="chart_div"></div>
 <script>
 
     var menu_items = document.getElementsByClassName("survey_item"); //Menu bar items
     var surveys = document.getElementsByClassName("tables"); //Data table
+    var questions = document.getElementsByClassName("questionslist");
+
+    var active_survey = 0;
     menu_items[0].classList.add("active");
+
+    
     
     //Displaying the first tab
     for(var i = 0; i < surveys.length; i++) {
+
         surveys[i].style.display = "none";
+        questions[i].style.display = "none";
     }
     surveys[0].style.display = "block";
+    questions[0].style.display = "block";
+
     
-    //In each survey page
-    for(var table = 0; table < surveys.length; table++) {
-        
-        var rows = surveys[table].getElementsByClassName("row"); //Each row in the table
-        var bars = surveys[table].getElementsByClassName("bar"); //Each bar in the graph below
-        var graph_wrapper = document.getElementsByClassName("graph_wrapper")[table];
-
-        //In each row of the table
-        for(var row = 0; row < rows.length; row++) {
-
-            var label = rows[row].getElementsByClassName("answer")[0].innerHTML; //The answer
-
-            var selected = rows[row].getElementsByClassName("count")[0].innerHTML;
-            bars[row].style.height = ((selected) * 10) + "px";
-            bars[row].style.left = ((row + 1) * 200) + "px";
-
-            graph_wrapper.getElementsByClassName("label")[row].innerHTML = label;
-            graph_wrapper.getElementsByClassName("label")[row].style.left = ((row + 1) * 200) + "px";
-        }
-    }
 
     function tab(survey_id) {
         for(var i = 0; i < menu_items.length; i++) {
+
+            console.log("tab function: survey_id=" + survey_id);
             menu_items[i].classList.remove("active");
             surveys[i].style.display = "none";
         }
+
+        for(var i = 0; i < surveys.length; i++) {
+
+            questions[i].style.display = "none";
+        }
+
         menu_items[survey_id].classList.add("active");
         surveys[survey_id].style.display = "block";
+
+        questions[survey_id].style.display = "block";
+
+        active_survey = survey_id;
+    }
+
+    function graphupdate(q) {
+
+        console.log("Graph update has been called" + q);
+
+        var table = document.getElementsByClassName('tables');
+
+        var table_rows_questions = table[active_survey].getElementsByClassName('question');
+        var table_rows_answers = table[active_survey].getElementsByClassName('answer');
+        var table_rows_counts = table[active_survey].getElementsByClassName('count');
+        
+        var graphdata = [];
+
+        console.log("Row Count: " + table_rows_questions.length);
+        for(var i = 0; i < table_rows_questions.length; i++) {
+
+            //console.log("table_rows_questions[i] is " + table_rows_questions[i].innerHTML);
+            //console.log("q is " + q);
+            if(table_rows_questions[i].innerHTML == q) {
+                
+                console.log("table_rows_answers[i].innerHTML is: " + table_rows_answers[i].innerHTML);
+                console.log("table_rows_counts[i].innerHTML is : " + table_rows_counts[i].innerHTML);
+                
+                graph_entry = [table_rows_answers[i].innerHTML.toString(10), parseInt(table_rows_counts[i].innerHTML)];
+                graphdata.push(graph_entry);
+            }
+        }
+        
+        /*for(var a = 0; a < graphdata.length; a++) {
+
+            for(var b = 0; b < graphdata[a].length; b++) {
+                
+                console.log("[A][B]: " + a + " " + b);
+                console.log("graphdata[a][b] is: " + graphdata[a][b]);
+            }
+        } */
+        
+        // Load the Visualization API and the corechart package.
+        google.charts.load('current', {'packages':['corechart']});
+
+        // Set a callback to run when the Google Visualization API is loaded.
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            // Create the data table.
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Question');
+            data.addColumn('number', 'Answer Count');
+
+           /* for(var i = 0; i < graphdata.length; i++) {
+                
+                console.log("graphdata[i][0] is " + graphdata[i][0]);
+                console.log("graphdata[i][1] is " + graphdata[i][1]);
+                data.addRow([graphdata[i]]);
+            } */
+
+            console.log("graphdata[0][1]" + graphdata[0][1]);
+            data.addRows(graphdata);
+            // Set chart options
+            var options = {'title':'',
+                            'width':1000,
+                            'height':300};
+
+            // Instantiate and draw our chart, passing in some options.
+            var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
     }
 </script>
 </body>

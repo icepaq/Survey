@@ -147,10 +147,18 @@
     <table>
         <tr>
             <td>
+                <p>Question Type</p>
+            </td>
+            <td>
+                <input type="checkbox" id="checkMC" value="Multiple Choice" checked="true"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
                 <p>Question: </p>
             </td>
             <td>
-                <input type="text" id="question"/>
+                <input type="text" id="question" />
             </td>
         </tr>
         <tr>
@@ -267,6 +275,7 @@
             $("#submit_questions").click(function() {
                 var survey = $("#survey_name").text();
                 var question = $("#question").val();
+                var question_type;
                 var answer1 = $("#answer1").val();
                 var answer2 = $("#answer2").val();
                 var answer3 = $("#answer3").val();
@@ -274,7 +283,14 @@
                 var answer5 = $("#answer5").val();
                 var answer6 = $("#answer6").val();
 
-                $.get("/submit_changes", {survey: survey, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6}).done(function() {
+                if(document.getElementById("checkMC").checked) {
+                    question_type = "MC";
+                }
+                else {
+                    question_type = "LONG";
+                }
+
+                $.get("/submit_changes", {survey: survey, question_type: question_type, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6}).done(function() {
                     location.reload();
                 });
             });
@@ -306,6 +322,7 @@
             //Submit question edits into the database
             $("#submit_question_changes").click(function() {
                 var survey = $("#survey_name").text();
+                var question_type;
                 var question = $("#edit_question").val();
                 var answer1 = $("#edit_answer1").val();
                 var answer2 = $("#edit_answer2").val();
@@ -314,6 +331,8 @@
                 var answer5 = $("#edit_answer5").val();
                 var answer6 = $("#edit_answer6").val();
 
+                
+
                 $.get("/submit_question_changes", {survey: survey, question: question, answer1: answer1, answer2: answer2, answer3: answer3, answer4: answer4, answer5: answer5, answer6: answer6, question_id: question_id}).done(function() {
                     location.reload();
                 });
@@ -321,16 +340,41 @@
 
             //Delete a question
             $("#delete_question").click(function() {
+
                 $.get("/delete_question", {question_id: question_id}).done(function() {
                     location.reload();
                 });
             });
 
             $("#updateEndMessage").click(function() {
+
                 var survey = $("#survey_name").text();
                 var message = $("#EndMessageInput").val();
 
                 $.get("/updateEndMessage", {survey: survey, message: message});
+            });
+
+            //Toggle answer sections
+            $("#checkMC").click(function() {
+                
+                if(document.getElementById("checkMC").checked) {
+
+                    console.log("checkMC ticked");
+                    for(var i = 1; i < 7; i++) {
+                        
+                        console.log(i);
+                        document.getElementById("answer" + i).disabled = false;
+                    }
+                }
+                else {
+
+                    console.log("checkMC unticked")
+                    for(var i = 1; i < 7; i++) {
+
+                        console.log(i);
+                        document.getElementById("answer" + i).disabled = true;
+                    }
+                }
             });
         });
     </script>
