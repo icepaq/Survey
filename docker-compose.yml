@@ -7,7 +7,6 @@ networks:
 services:
   municipalsurvey:
     image: municipalsurvey:latest
-    restart: unless-stopped
     ports: 
         - 8080:8080
     networks:
@@ -18,7 +17,6 @@ services:
 
   mysql:
     image: mysql:8.0
-    restart: unless-stopped
     environment: 
       MYSQL_ROOT_PASSWORD: Java_test.
     networks: 

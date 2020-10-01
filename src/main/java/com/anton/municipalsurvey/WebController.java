@@ -20,7 +20,8 @@ public class WebController {
 	@RequestMapping(value = "/db")
 	@ResponseBody
 	public String db() throws SQLException {
-		return a.db();
+		
+		return a.dbExists();
 	}
 	
 	@RequestMapping(value = "/dbsetup")

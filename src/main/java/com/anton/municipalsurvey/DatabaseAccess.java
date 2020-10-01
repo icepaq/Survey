@@ -15,6 +15,70 @@ public class DatabaseAccess {
 	
 	Codes codes = new Codes();
 	
+	public String[][] getUsers() throws SQLException {
+		
+		String query = "SELECT * FROM users";
+		
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		ResultSet rs; //Cursor
+		
+		String [][]data;
+		int counter = 0;
+		
+		int size = 0;
+		try {
+
+			rs = stmt.executeQuery();
+			while(rs.next()) {
+				size++;
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		data = new String[size][4]; 
+		for(int i = 0; i < 10; i++) {
+			System.out.println("-");
+		}
+		System.out.println("Size is : " + size);     
+		
+		for(int i = 0; i < 10; i++) {
+			System.out.println("-");
+		}
+		
+		try {
+			
+			rs = stmt.executeQuery();
+			while (rs.next()) {
+
+				data[counter][0] = rs.getString("username");
+				data[counter][1] = rs.getString("role");
+				data[counter][2] = "edit(user='" + data[counter][0] + "')";
+				data[counter][3] = rs.getString("password");
+				
+				
+				counter++;
+			}
+
+		}
+		catch (SQLException e) {
+
+			System.out.println(e);
+			
+		} 
+		finally {
+			
+			if (stmt != null) {
+				stmt.close();
+			}
+		}
+		
+		return data;
+	}
+	
 	public String[][][] questions() throws SQLException {
 		
 		System.out.println("QUESTIONS LIST: ");
@@ -41,7 +105,14 @@ public class DatabaseAccess {
 				}
 			}
 			catch(SQLException e) {
+				
 				System.out.println(e);
+			}
+			finally {
+				
+				if (stmt != null) {
+					stmt.close();
+				}
 			}
 			
 			if(counter > max_questions) {
@@ -80,9 +151,33 @@ public class DatabaseAccess {
 		return questions;
 	}
 	
-	public String db() throws SQLException{
+	public String dbExists() throws SQLException {
 		
-		String []queries = new String[5];
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		PreparedStatement stmt = conn.prepareStatement("USE survey_db");
+		String error = "";
+		
+		try {
+			stmt.executeQuery();
+		}
+		catch(SQLException e) {
+			System.out.println("dbExists: " + e);
+			error = e.toString();
+		}
+
+		if(error == "java.sql.SQLSyntaxErrorException: Unknown database 'survey_db'") {
+			return db();
+		}
+		else {
+			return "Already Exists";
+		}
+		
+	}
+	
+	public String db() throws SQLException {
+		
+		String []queries = new String[7];
+		
 		queries[0] = "CREATE DATABASE IF NOT EXISTS survey_db";
 		queries[1] = "CREATE TABLE IF NOT EXISTS survey_db.answers("
 				+ "entry_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
@@ -116,6 +211,15 @@ public class DatabaseAccess {
 				+ "code tinyint(1)"
 				+ ")";
 		
+		queries[5] = "CREATE TABLE IF NOT EXISTS survey_db.users("
+				+ "username VARCHAR(20) NOT NULL PRIMARY KEY, "
+				+ "password VARCHAR(20) NOT NULL, "
+				+ "role VARCHAR(20) NOT NULL, "
+				+ "created DATETIME"
+				+ ")";
+		
+		queries[6] = "INSERT INTO survey_db.users VALUES('user', '{bcrypt}$2a$10$Y5ASZ5rZ53TN4KB8BUSpLO.3C5XHB51CCvTNI5syZAqTnew/NwjJ2', 'ADMIN', NOW())";
+		
 		Connection conn = DriverManager.getConnection(codes.host, codes.db_username, codes.db_password);
 		
 		for(int i = 0; i < queries.length; i++) {
@@ -124,15 +228,25 @@ public class DatabaseAccess {
 			
 			try {
 				
+				System.out.println(queries[i]);
 				stmt.executeUpdate();
 			}
 			catch(SQLException e) {
 				
+				e.printStackTrace();
+				if(conn != null) {
+					conn.close();
+				}
 				return "MYSQL ERROR";
 			}
 		}
 		
+		if(conn != null) {
+			conn.close();
+		}
+		
 		return "SUCCESS";
+		
 	}
 	
 	public String getQuestions() throws SQLException {
