@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +18,27 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class WebController {
 	
 	DatabaseAccess a = new DatabaseAccess();
+	
+	@RequestMapping(value = "/newUser")
+	@ResponseBody
+	public String newUser(@RequestParam String username, @RequestParam String password, @RequestParam String role) throws SQLException {
+
+		return a.newUser(username, password, role);
+	}
+	
+	@RequestMapping(value = "/deleteUser")
+	@ResponseBody
+	public String deleteUser(@RequestParam String user) throws SQLException {
+		
+		return a.deleteUser(user);
+	}
+	
+	@RequestMapping(value = "/usermanagement")
+	public String usermanagement(Model model) throws SQLException {
+		
+		model.addAttribute("users", a.getUsers());
+		return "usermanagement";
+	}
 	
 	@RequestMapping(value = "/db")
 	@ResponseBody
@@ -88,16 +111,9 @@ public class WebController {
 	//Home Page
 	@RequestMapping(value = "/")
 	public String index(Model model) throws SQLException{
-		
-		try {
 			
-			model.addAttribute("surveys", a.getSurveys());
-		}
-		catch(SQLException e) {
-			
-			System.out.println(e);
-			return "mysqlerror";
-		}
+		model.addAttribute("surveys", a.getSurveys());
+		model.addAttribute("greeting", a.getGreeting());
 		
 		return "index";	
 	}

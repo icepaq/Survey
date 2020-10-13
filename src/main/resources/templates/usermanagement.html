@@ -1,0 +1,93 @@
+<html>
+
+<head>
+    <title>User Management</title>
+    <script src="jquery-3.5.1.js"></script>
+
+    <style>
+        h1, h2, h3, h4, h5, td, th, button {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        div {
+            padding: 10;
+            margin: 10;
+        }
+
+        th {
+            
+            width: 300px;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 24px;
+        }
+
+        td {
+            padding: 5 10;
+        }
+
+        .tdUsers {
+            width: 200px;
+        }
+
+        .tdUsersDelete {
+            width: 100p;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="users">
+        <table>
+            <h2>Users</h2>
+            <tr th:each="u: ${users}" class="trUsers">
+                <td th:text="${u[0]}" class="tdUsers"></td>
+                <td class="tdUsersDelete">
+                    <button th:attr="onclick=${u[2]}">DELETE</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="newUser">
+        <h2>New User</h2>
+        <table>
+            <tr>
+                <td>Username: </td>
+                <td><input type="text" id="username"></td>
+            </tr>
+            <tr>
+                <td>Password: </td>
+                <td><input type="password" id="password"></td>
+            </tr>
+            <tr>
+                <td><button onclick="newUser()">Add User</button></td>
+            </tr>
+        </table>
+    </div>
+
+<script>
+
+    function delete_user(user) {    
+
+        console.log(user);
+        $.get("/deleteUser", {user: user}).done(function(data) {
+            console.log(data);
+        });
+    }
+
+    function newUser() {
+
+        var username = $("#username").val();
+        var password = $("#password").val();
+
+        console.log(username + "   " + password);
+
+        $.get("/newUser", {username: username, password: password, role: "ADMIN"}).done(function(data) {
+            console.log(data);
+        });
+    }
+</script>
+</body>
+</html>

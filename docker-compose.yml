@@ -22,7 +22,8 @@ services:
     networks: 
       - surveyapp-network
     volumes: 
-      - mysql-volume:/var/lib/mysql
+      - mysql-volume:/var/lib/mysql-data
+    tty: true
 
 volumes:
   mysql-volume:

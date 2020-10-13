@@ -4,6 +4,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,6 +19,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
+import org.springframework.security.provisioning.UserDetailsManager;
 
 @Configuration
 @EnableWebSecurity
@@ -36,8 +39,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.logout()
 				.permitAll();
 	}
-
+	
 	@Bean
+	public UserDetailsManager users(DataSource dataSource) {
+		
+		JdbcUserDetailsManager users = new JdbcUserDetailsManager(dataSource);
+		
+		return users;
+	}
+	/*@Bean
 	public UserDetailsService userDetailsService() {
 		
 		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -56,14 +66,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		}
 		System.out.println(encoder.encode("password"));
 		InMemoryUserDetailsManager userDetailsManager = new InMemoryUserDetailsManager();
-		UserDetails user = User
-				.withUsername("user")
-				.password("{bcrypt}$2a$10$Y5ASZ5rZ53TN4KB8BUSpLO.3C5XHB51CCvTNI5syZAqTnew/NwjJ2")
-				.roles("ADMIN")
-				.build();
 		
-		
-		userDetailsManager.createUser(user);
 		try {
 			for(int i = 0; i < users.length; i++) {
 				UserDetails db_user = User
@@ -78,5 +81,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			System.out.println(e);
 		}
 		return userDetailsManager; 
-	}
+	}*/
 }

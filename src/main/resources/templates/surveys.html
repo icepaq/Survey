@@ -64,6 +64,11 @@
 <body>
     <center> <h1>Survey Management</h1> </center>
 
+    <div id="home page">
+        <h2>Greeting Message</h2>
+        <input id="greeting" type="text"/>
+        <button onclick="updateGreeting()">Update Greeting</button>
+    </div>
     <div id="surveys_table">
         <center> <h2>Surveys</h2> </center>
         <table>
@@ -143,6 +148,13 @@
             location.reload();
         });
     }
+
+    /*function updateGreeting() {
+
+        var greeting = $("#greeting").val();
+
+        $.get("/updateGreeting")
+    }*/
 
     $(document).ready(function() {
         $("#submit_new_survey").click(function() {

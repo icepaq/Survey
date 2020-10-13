@@ -7,6 +7,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 //This class takes care of all MySQL connections and other logic that has to do with database connections.
 public class DatabaseAccess {
@@ -14,6 +27,106 @@ public class DatabaseAccess {
 	private int temp_index; //See exists()
 	
 	Codes codes = new Codes();
+	
+	public String newUser(String username, String password, String role) throws SQLException {
+		
+		String query = "INSERT INTO users VALUES(?, ?, 1)"; //user, password, enabled
+		String query2 = "INSERT INTO authorities VALUES(?, ?)"; //user, role
+		
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		
+		PreparedStatement stmt1 = conn.prepareStatement(query);
+		PreparedStatement stmt2 = conn.prepareStatement(query2);
+		
+		PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+		
+		stmt1.setString(1, username);
+		stmt1.setString(2, encoder.encode(password));
+		
+		stmt2.setString(1, username);
+		stmt2.setString(2, role);
+		
+		//Adding user to the users table
+		try {
+			stmt1.executeUpdate();
+		}
+		catch(SQLException e) {
+			
+			System.out.println(e);
+			if(conn != null) {
+				conn.close();
+			}
+			
+			return "MYSQL Error";
+		}
+		
+		//Adding user to authorities table
+		try {
+			stmt2.executeUpdate();
+		}
+		catch(SQLException e) {
+			
+			System.out.println(e);
+			if(conn != null) {
+				conn.close();
+			}
+			
+			return "MYSQL Error";
+		}
+		finally {
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		
+		return "SUCCESS";
+	}
+	
+	public String deleteUser(String user) throws SQLException {
+		
+		String query = "DELETE FROM users WHERE username = ?";
+		String query2 = "DELETE FROM authorities WHERE username = ?";
+		
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		
+		PreparedStatement stmt = conn.prepareStatement(query);
+		PreparedStatement stmt2 = conn.prepareStatement(query2);
+		
+		stmt.setString(1, user);
+		stmt2.setString(1, user);
+		
+		try {
+			
+			stmt.executeUpdate();
+		}
+		catch(SQLException e) {
+			
+			System.out.println(user);
+			if(conn != null) {
+				conn.close();
+			}
+			return "MYSQL ERROR";
+		}
+		
+		try {
+			stmt2.executeUpdate();
+		}
+		catch(SQLException e) {
+			
+			System.out.println(e);
+			if(conn != null) {
+				conn.close();
+			}
+			return "MYSQL Error";
+		}
+		finally {
+			
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		return "SUCCESS";
+	}
 	
 	public String[][] getUsers() throws SQLException {
 		
@@ -40,14 +153,6 @@ public class DatabaseAccess {
 		}
 		
 		data = new String[size][4]; 
-		for(int i = 0; i < 10; i++) {
-			System.out.println("-");
-		}
-		System.out.println("Size is : " + size);     
-		
-		for(int i = 0; i < 10; i++) {
-			System.out.println("-");
-		}
 		
 		try {
 			
@@ -55,8 +160,8 @@ public class DatabaseAccess {
 			while (rs.next()) {
 
 				data[counter][0] = rs.getString("username");
-				data[counter][1] = rs.getString("role");
-				data[counter][2] = "edit(user='" + data[counter][0] + "')";
+				data[counter][1] = "";
+				data[counter][2] = "delete_user(user='" + data[counter][0] + "')";
 				data[counter][3] = rs.getString("password");
 				
 				
@@ -153,7 +258,7 @@ public class DatabaseAccess {
 	
 	public String dbExists() throws SQLException {
 		
-		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host, codes.db_username, codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement("USE survey_db");
 		String error = "";
 		
@@ -165,7 +270,7 @@ public class DatabaseAccess {
 			error = e.toString();
 		}
 
-		if(error == "java.sql.SQLSyntaxErrorException: Unknown database 'survey_db'") {
+		if(error.equals("java.sql.SQLSyntaxErrorException: Unknown database 'survey_db'")) {
 			return db();
 		}
 		else {
@@ -213,7 +318,7 @@ public class DatabaseAccess {
 		
 		queries[5] = "CREATE TABLE IF NOT EXISTS survey_db.users("
 				+ "username VARCHAR(20) NOT NULL PRIMARY KEY, "
-				+ "password VARCHAR(20) NOT NULL, "
+				+ "password VARCHAR(120) NOT NULL, "
 				+ "role VARCHAR(20) NOT NULL, "
 				+ "created DATETIME"
 				+ ")";

@@ -2,8 +2,9 @@ body {
     background-color: #00081c;
 }
 
-h1, h3 {
+h1, h2, h3, h4, h5 {
     cursor: default;
+    font-family: sans-serif;
 }
 
 #header {
@@ -11,7 +12,6 @@ h1, h3 {
     margin-top: 10%;
     vertical-align: middle;
     color: white;
-    font-family: sans-serif;
     font-size: 150%;
     
     display: none;
