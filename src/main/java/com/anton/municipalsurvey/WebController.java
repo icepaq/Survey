@@ -19,6 +19,13 @@ public class WebController {
 	
 	DatabaseAccess a = new DatabaseAccess();
 	
+	@RequestMapping(value = "/updateGreeting")
+	@ResponseBody
+	public String updateGreeting(@RequestParam String greeting) throws SQLException{
+		
+		return a.updateGreeting(greeting);
+	}
+	
 	@RequestMapping(value = "/newUser")
 	@ResponseBody
 	public String newUser(@RequestParam String username, @RequestParam String password, @RequestParam String role) throws SQLException {

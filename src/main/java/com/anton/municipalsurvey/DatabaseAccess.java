@@ -28,6 +28,64 @@ public class DatabaseAccess {
 	
 	Codes codes = new Codes();
 	
+	public String updateGreeting(String greeting) throws SQLException {
+		
+		String query = "INSERT INTO greeting VALUES(?)";
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		PreparedStatement stmt = conn.prepareStatement(query);
+		
+		stmt.setString(1, greeting);
+		
+		try {
+			stmt.executeUpdate();
+		}
+		catch(SQLException e) {
+			
+			System.out.println();
+			
+			if(conn != null) {
+				conn.close();
+			}
+			return "MySQL Error";
+		}
+		finally {
+			
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		return "SUCCCESS";
+	}
+	
+	public String getGreeting() throws SQLException {
+		
+		String query = "SELECT * FROM greeting";
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		PreparedStatement stmt = conn.prepareStatement(query);
+		ResultSet rs;
+		String greeting = "";
+		
+		try {
+			
+			rs = stmt.executeQuery();
+			while(rs.next()) {
+				greeting = rs.getString(1);
+			}
+			
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		finally {
+			
+			if(conn != null) {
+				conn.close();
+			}
+		}
+		
+		return greeting;
+	}
+	
 	public String newUser(String username, String password, String role) throws SQLException {
 		
 		String query = "INSERT INTO users VALUES(?, ?, 1)"; //user, password, enabled
@@ -281,9 +339,10 @@ public class DatabaseAccess {
 	
 	public String db() throws SQLException {
 		
-		String []queries = new String[7];
+		String []queries = new String[9];
 		
 		queries[0] = "CREATE DATABASE IF NOT EXISTS survey_db";
+		
 		queries[1] = "CREATE TABLE IF NOT EXISTS survey_db.answers("
 				+ "entry_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT, "
 				+ "survey_name VARCHAR(20), "
@@ -315,7 +374,6 @@ public class DatabaseAccess {
 				+ "survey_end_message VARCHAR(60), "
 				+ "code tinyint(1)"
 				+ ")";
-		
 		queries[5] = "CREATE TABLE IF NOT EXISTS survey_db.users("
 				+ "username VARCHAR(20) NOT NULL PRIMARY KEY, "
 				+ "password VARCHAR(120) NOT NULL, "
@@ -324,6 +382,10 @@ public class DatabaseAccess {
 				+ ")";
 		
 		queries[6] = "INSERT INTO survey_db.users VALUES('user', '{bcrypt}$2a$10$Y5ASZ5rZ53TN4KB8BUSpLO.3C5XHB51CCvTNI5syZAqTnew/NwjJ2', 'ADMIN', NOW())";
+		
+		queries[7] = "CREATE TABLE survey_db.greeting(greeting VARCHAR(120))";
+		
+		queries[8] = "INSERT INTO survey_db.greeting VALUES('Head to /manage to Change the Greeting Message')";
 		
 		Connection conn = DriverManager.getConnection(codes.host, codes.db_username, codes.db_password);
 		
