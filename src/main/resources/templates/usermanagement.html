@@ -2,16 +2,13 @@
 
 <head>
     <title>User Management</title>
+
     <script src="jquery-3.5.1.js"></script>
+    <link rel="stylesheet" type="text/css" href="sidebar.css">
 
     <style>
         h1, h2, h3, h4, h5, td, th, button {
             font-family: Arial, Helvetica, sans-serif;
-        }
-
-        div {
-            padding: 10;
-            margin: 10;
         }
 
         th {
@@ -38,6 +35,12 @@
 
 <body>
 
+    <div class="sidebar">
+        <a href="/results">Results</a>
+        <a href="/manage">Manage</a>
+        <a href="/usermanagement">User Management</a>
+    </div>
+<div id="mainWrapper">
     <div id="users">
         <table>
             <h2>Users</h2>
@@ -66,7 +69,7 @@
             </tr>
         </table>
     </div>
-
+</div>
 <script>
 
     function delete_user(user) {    

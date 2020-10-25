@@ -1,0 +1,13 @@
+<ul><center><h3 class="white" th:text="${header}"></h3></center></ul>
+<table>
+    <tr>
+        <th class="spacing">Survey</th>
+        <th class="spacing">Question</th>
+        <th class="spacing">Answer</th>
+    </tr>
+    <tr th:each="r: ${results}">
+        <td class="spacing" th:text="${r[0]}"></td>
+        <td class="spacing" th:text="${r[1]}"></td>
+        <td class="spacing" th:text="${r[2]}"></td>
+    </tr>
+</table>

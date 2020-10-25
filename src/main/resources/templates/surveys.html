@@ -2,6 +2,8 @@
 <head>
     <title>Surveys</title>
 
+    <link rel="stylesheet" type="text/css" href="sidebar.css">
+
     <style>
         h1, h2, p, span {
             font-family: sans-serif;
@@ -62,6 +64,12 @@
 </head>
 
 <body>
+    <div class="sidebar">
+        <a href="/results">Results</a>
+        <a href="/manage">Manage</a>
+        <a href="/usermanagement">User Management</a>
+    </div>
+<div id="mainWrapper">
     <center> <h1>Survey Management</h1> </center>
 
     <div id="home page">
@@ -126,7 +134,7 @@
             </tr>
         </table>
     </div>
-
+</div>
 <script>
     function survey_select(survey) {
         window.location.href = "/survey_control?survey=" + survey;

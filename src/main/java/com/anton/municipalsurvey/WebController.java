@@ -19,6 +19,14 @@ public class WebController {
 	
 	DatabaseAccess a = new DatabaseAccess();
 	
+	@RequestMapping(value = "/ResultsByCode")
+	public String ResultsByCode(@RequestParam String code, Model model) throws SQLException {
+		
+		model.addAttribute("results", a.getResultsByCode(code));
+		model.addAttribute("header", "Entries By " + code);
+		return "ResultsByCode";
+	}
+	
 	@RequestMapping(value = "/updateGreeting")
 	@ResponseBody
 	public String updateGreeting(@RequestParam String greeting) throws SQLException{
@@ -88,6 +96,7 @@ public class WebController {
 		model.addAttribute("surveys", a.surveys());
 		model.addAttribute("results", a.surveyResults());
 		model.addAttribute("questions", a.questions());
+		model.addAttribute("codes", a.getCodes());
 		//a.getQuestions();
 		return "results";
 	}
@@ -139,8 +148,8 @@ public class WebController {
 	}
 	
 	//Survey Management
-	@RequestMapping(value = "/surveys")
-	public String surveys(Model model) throws SQLException {
+	@RequestMapping(value = "/manage")
+	public String manage(Model model) throws SQLException {
 		
 		model.addAttribute("surveys", a.getSurveys());
 		return "surveys";

@@ -28,6 +28,101 @@ public class DatabaseAccess {
 	
 	Codes codes = new Codes();
 	
+	public String[][] getResultsByCode(String code) throws SQLException {
+		
+		String query = "SELECT * FROM answers WHERE code = ?";
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		PreparedStatement stmt = conn.prepareStatement(query);
+		ResultSet rs;
+		ResultSet rs2;
+		
+		String[][] results;
+		
+		int counter = 0;
+		
+		stmt.setString(1, code);
+		
+		try {
+			rs = stmt.executeQuery();
+			
+			while(rs.next()) {
+				counter++;
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		results = new String[counter][3];
+		
+		try {
+			
+			rs = stmt.executeQuery();
+			
+			counter = 0;
+			while(rs.next()) {
+				
+				results[counter][0] = rs.getString(2); //Survey name
+				results[counter][1] = rs.getString(3); //Question
+				results[counter][2] = rs.getString(4); //Answer
+				
+				counter++;
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		return results;
+	}
+	
+	public String[][] getCodes() throws SQLException {
+		
+		String query = "SELECT * FROM codes";
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
+		PreparedStatement stmt = conn.prepareStatement(query);
+		ResultSet rs;
+		
+		String[][] codes;
+		int counter = 0;
+		
+		try 
+		{
+			rs = stmt.executeQuery();
+			
+			while(rs.next()) {
+				counter++;
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		codes = new String[counter][6];
+		try {
+			
+			rs = stmt.executeQuery();
+			
+			counter = 0;
+			while(rs.next()) {
+				
+				codes[counter][0] = rs.getString(2); //Code
+				codes[counter][1] = rs.getString(3); //Survey Name
+				codes[counter][2] = rs.getString(4); //IP Address
+				codes[counter][3] = Integer.toString(rs.getInt(5)); //Complete 0/1. 1 for complete.
+				codes[counter][4] = rs.getString(6); //Date
+				codes[counter][5] = "GetResultsByCode('" + codes[counter][0] + "')";
+						
+				counter++;
+			}
+		}
+		catch(SQLException e) {
+			System.out.println(e);
+		}
+		
+		return codes;
+	}
+	
 	public String updateGreeting(String greeting) throws SQLException {
 		
 		String query = "INSERT INTO greeting VALUES(?)";
@@ -234,8 +329,8 @@ public class DatabaseAccess {
 		} 
 		finally {
 			
-			if (stmt != null) {
-				stmt.close();
+			if (conn != null) {
+				conn.close();
 			}
 		}
 		
@@ -271,12 +366,7 @@ public class DatabaseAccess {
 				
 				System.out.println(e);
 			}
-			finally {
-				
-				if (stmt != null) {
-					stmt.close();
-				}
-			}
+			
 			
 			if(counter > max_questions) {
 				
@@ -339,7 +429,7 @@ public class DatabaseAccess {
 	
 	public String db() throws SQLException {
 		
-		String []queries = new String[9];
+		String []queries = new String[11];
 		
 		queries[0] = "CREATE DATABASE IF NOT EXISTS survey_db";
 		
@@ -376,16 +466,19 @@ public class DatabaseAccess {
 				+ ")";
 		queries[5] = "CREATE TABLE IF NOT EXISTS survey_db.users("
 				+ "username VARCHAR(20) NOT NULL PRIMARY KEY, "
-				+ "password VARCHAR(120) NOT NULL, "
-				+ "role VARCHAR(20) NOT NULL, "
-				+ "created DATETIME"
-				+ ")";
+				+ "password VARCHAR(120) NOT NULL, " 
+				+ "enabled TINYINT(1)"
+				+ ")";	
 		
-		queries[6] = "INSERT INTO survey_db.users VALUES('user', '{bcrypt}$2a$10$Y5ASZ5rZ53TN4KB8BUSpLO.3C5XHB51CCvTNI5syZAqTnew/NwjJ2', 'ADMIN', NOW())";
+		queries[6] = "INSERT INTO survey_db.users VALUES('user', '{bcrypt}$2a$10$Y5ASZ5rZ53TN4KB8BUSpLO.3C5XHB51CCvTNI5syZAqTnew/NwjJ2', 1)";
 		
-		queries[7] = "CREATE TABLE survey_db.greeting(greeting VARCHAR(120))";
+		queries[7] = "CREATE TABLE IF NOT EXISTS survey_db.authorities(username VARCHAR(50), authority VARCHAR(50))";
 		
-		queries[8] = "INSERT INTO survey_db.greeting VALUES('Head to /manage to Change the Greeting Message')";
+		queries[8] = "INSERT INTO survey_db.authorities VALUES('user', 'ADMIN')";
+		
+		queries[9] = "CREATE TABLE survey_db.greeting(greeting VARCHAR(120))";
+		
+		queries[10] = "INSERT INTO survey_db.greeting VALUES('Head to /manage to Change the Greeting Message')";
 		
 		Connection conn = DriverManager.getConnection(codes.host, codes.db_username, codes.db_password);
 		

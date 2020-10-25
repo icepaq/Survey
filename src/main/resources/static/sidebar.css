@@ -1,0 +1,36 @@
+.sidebar {
+    height: 100%;
+    width: 240px;
+
+    background-color: rgb(42, 42, 42);
+
+    position: fixed;
+    z-index: 1;
+
+    top: 0;
+    left: 0;
+    
+    overflow-x: hidden;
+    padding-top: 15px;
+}
+
+.sidebar a {
+    padding: 5 10;
+    font-size: 20px;
+    color: #696969;
+    display: block;
+
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    color: #bebebe;
+}
+
+#mainWrapper {
+    margin-left: 240px;
+}
+
+h1, h2, h3, h4, h5, p, span, th, td, li, a{
+    font-family: sans-serif;
+}
