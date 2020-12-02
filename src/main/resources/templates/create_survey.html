@@ -2,6 +2,7 @@
 <head>
     <title>Create Survey</title>
     <script src="jquery-3.5.1.js"></script>
+    <link rel="stylesheet" type="text/css" href="sidebar.css">
 
     <style>
         /* Text Formatting */
@@ -122,10 +123,20 @@
         #edit_question_form {
             display: none;
         }
+
+        .answers {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
+    <div class="sidebar">
+        <a href="/results">Results</a>
+        <a href="/manage">Manage</a>
+        <a href="/usermanagement">User Management</a>
+    </div>
+<div id="mainWrapper">
     <h1>Survey Settings</h1>
     <h3 id="survey_name" th:text="${survey}"></h3>
 
@@ -218,12 +229,12 @@
         <table>
             <tr>
                 <th>Question</th>
-                <th>Answers</th>
+                <th class="answers">Answers</th>
                 <th>Edit Question</th>
             </tr>
             <tr id="question" th:each="q: ${question_answers}">
                 <td><span th:text="${q[2]}" th:id="${q[4]}"></span></td>
-                <td><span th:text="${q[3]}" th:id="${q[5]}"></span></td>
+                <td class="answers"><span th:text="${q[3]}" th:id="${q[5]}"></span></td>
                 <td><button class="edit_question" th:id="${q[0]}">Edit Question</button></td>
             </tr>
         </table>
@@ -265,7 +276,8 @@
         <button class="button_margin edit_question_formatting" id="submit_question_changes">Submit Changes</button> <br>
         <button class="button_margin edit_question_formatting" id="delete_question">Delete Question</button>
     </div>
-    </div>
+    
+</div>
     <script>
         /* Test Comment */
         var question_id; //When a user submits a question edit the question_id will be passed and is used at the primary key in the database
@@ -298,6 +310,8 @@
             $(".edit_question").click(function() {
 
                 question_id = $(this).closest(".edit_question").attr("id"); 
+                console.log('Question ID: ' + question_id);
+
                 document.getElementById("question_id").innerHTML = "Question ID: " + question_id;
                 
                 var edit_question_form = document.getElementById("edit_question_form")
@@ -341,6 +355,7 @@
             //Delete a question
             $("#delete_question").click(function() {
 
+                console.log('Deleting Question: ' + question_id);
                 $.get("/delete_question", {question_id: question_id}).done(function() {
                     location.reload();
                 });

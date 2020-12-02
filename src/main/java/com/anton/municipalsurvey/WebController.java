@@ -1,10 +1,16 @@
 package com.anton.municipalsurvey;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -19,6 +25,22 @@ public class WebController {
 	
 	DatabaseAccess a = new DatabaseAccess();
 	
+	@RequestMapping(value = "/getuserinfo")
+	@ResponseBody
+	public String getuserinfo() {
+		
+		SecurityContext context = SecurityContextHolder.getContext();
+		Authentication authentication = context.getAuthentication();
+		String username = authentication.getName();
+		Object principal = authentication.getPrincipal();
+		Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+		
+		System.out.println("User: " + authentication.getName());
+		System.out.println("Authority: " + authentication.getAuthorities());
+		
+		return "";
+	}
+	
 	@RequestMapping(value = "/ResultsByCode")
 	public String ResultsByCode(@RequestParam String code, Model model) throws SQLException {
 		
@@ -29,7 +51,7 @@ public class WebController {
 	
 	@RequestMapping(value = "/updateGreeting")
 	@ResponseBody
-	public String updateGreeting(@RequestParam String greeting) throws SQLException{
+	public String updateGreeting(@RequestParam String greeting) throws SQLException {
 		
 		return a.updateGreeting(greeting);
 	}

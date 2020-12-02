@@ -74,9 +74,11 @@
 
     function delete_user(user) {    
 
+        var users = 
         console.log(user);
         $.get("/deleteUser", {user: user}).done(function(data) {
             console.log(data);
+            location.reload();
         });
     }
 
@@ -89,6 +91,7 @@
 
         $.get("/newUser", {username: username, password: password, role: "ADMIN"}).done(function(data) {
             console.log(data);
+            location.reload();
         });
     }
 </script>

@@ -237,6 +237,8 @@ public class DatabaseAccess {
 	
 	public String deleteUser(String user) throws SQLException {
 		
+		String [][] users = getUsers();
+		
 		String query = "DELETE FROM users WHERE username = ?";
 		String query2 = "DELETE FROM authorities WHERE username = ?";
 		
@@ -248,36 +250,44 @@ public class DatabaseAccess {
 		stmt.setString(1, user);
 		stmt2.setString(1, user);
 		
-		try {
+		if(users.length < 2) {
 			
-			stmt.executeUpdate();
+			return "You cannot delete the last user";
 		}
-		catch(SQLException e) {
+		else {
 			
-			System.out.println(user);
-			if(conn != null) {
-				conn.close();
+			try {
+				
+				stmt.executeUpdate();
 			}
-			return "MYSQL ERROR";
+			catch(SQLException e) {
+				
+				System.out.println(user);
+				if(conn != null) {
+					conn.close();
+				}
+				return "MYSQL ERROR";
+			}
+			
+			try {
+				stmt2.executeUpdate();
+			}
+			catch(SQLException e) {
+				
+				System.out.println(e);
+				if(conn != null) {
+					conn.close();
+				}
+				return "MYSQL Error";
+			}
+			finally {
+				
+				if(conn != null) {
+					conn.close();
+				}
+			}
 		}
 		
-		try {
-			stmt2.executeUpdate();
-		}
-		catch(SQLException e) {
-			
-			System.out.println(e);
-			if(conn != null) {
-				conn.close();
-			}
-			return "MYSQL Error";
-		}
-		finally {
-			
-			if(conn != null) {
-				conn.close();
-			}
-		}
 		return "SUCCESS";
 	}
 	
@@ -468,7 +478,7 @@ public class DatabaseAccess {
 				+ "username VARCHAR(20) NOT NULL PRIMARY KEY, "
 				+ "password VARCHAR(120) NOT NULL, " 
 				+ "enabled TINYINT(1)"
-				+ ")";	
+				+ ")";
 		
 		queries[6] = "INSERT INTO survey_db.users VALUES('user', '{bcrypt}$2a$10$Y5ASZ5rZ53TN4KB8BUSpLO.3C5XHB51CCvTNI5syZAqTnew/NwjJ2', 1)";
 		
@@ -1041,21 +1051,28 @@ public class DatabaseAccess {
 	//Delete a question
 	public String deleteQuestion(String question_id) throws SQLException {
 		
-		String query = "DELETE FROM survey_db.questions WHERE question_id = ?";
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", codes.db_username, codes.db_password);
+		String query = "DELETE FROM questions WHERE id = ?";
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, question_id);
 		
 		try{
+			
 			stmt.executeUpdate();
+			
 		}catch(SQLException e) {
+			
 			System.out.println(e);
 			return "SQL_ERROR";
+			
 		}finally {
+			
 			if(conn != null) {
+				
 				conn.close();
+				
 			}
 		}
 		
