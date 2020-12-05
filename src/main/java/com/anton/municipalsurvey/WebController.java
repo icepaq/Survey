@@ -183,7 +183,7 @@ public class WebController {
 		model.addAttribute("survey", survey);
 		model.addAttribute("questions", a.question_answers(survey)); //Stores answers from selected survey table passing as a GET/POST Parameter
 		model.addAttribute("question_answers", a.question_answers(survey)); //Similar to getAnswers but retrieves additional indexes for Thymeleaf tags
-		return "create_survey";
+		return "editsurvey";
 	}
 	
 	//Processing New Questions

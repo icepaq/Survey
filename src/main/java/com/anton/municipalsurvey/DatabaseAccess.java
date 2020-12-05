@@ -1086,7 +1086,7 @@ public class DatabaseAccess {
 		String query = "UPDATE survey_db." + survey + " SET question = ?, answers = ? WHERE question_id = ?";
 		System.out.println(query);
 		
-		Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", codes.db_username, codes.db_password);
+		Connection conn = DriverManager.getConnection(codes.host_name, codes.db_username, codes.db_password);
 		PreparedStatement stmt = conn.prepareStatement(query);
 		
 		stmt.setString(1, question);

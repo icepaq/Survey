@@ -18,7 +18,9 @@
             font-size: 23px;
         }
 
-
+        p, h1, h2, h3, h4, h5 {
+            font-family: Arial, Helvetica, sans-serif;
+        }
         /* Button Formatting */
         #submit_questions {
             background-color: white;
@@ -127,6 +129,18 @@
         .answers {
             display: none;
         }
+
+        .header {
+
+            width: 100%;
+            height: 30px;
+
+            background-color: rgb(22, 22, 22);
+
+            padding: 10px;
+        }
+
+
     </style>
 </head>
 
@@ -137,7 +151,7 @@
         <a href="/usermanagement">User Management</a>
     </div>
 <div id="mainWrapper">
-    <h1>Survey Settings</h1>
+    <div class="header"><center><h1>Survey Settings</h1></center></div>
     <h3 id="survey_name" th:text="${survey}"></h3>
 
     <div id="end_message">
@@ -154,75 +168,74 @@
     </div>
 
     <div id="add_question">
-    <h2>Add Question</h3>
-    <table>
-        <tr>
-            <td>
-                <p>Question Type</p>
-            </td>
-            <td>
-                <input type="checkbox" id="checkMC" value="Multiple Choice" checked="true"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p>Question: </p>
-            </td>
-            <td>
-                <input type="text" id="question" />
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p> Option 1: </p>
-            </td>
-            <td>
-               <p> <input type="text" id="answer1"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p> Option 2: </p>
-            </td>
-            <td>
-                <input type="text" id="answer2"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p> Option 3: </p>
-            </td>
-            <td>
-                <input type="text" id="answer3"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p> Option 4: </p>
-            </td>
-            <td>
-                <input type="text" id="answer4"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p> Option 5: </p>
-            </td>
-            <td>
-                <input type="text" id="answer5"/>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <p> Option 6: </p>
-            </td>
-            <td>
-                <input type="text" id="answer6"/>
-            </td>
-        </tr>
-    </table>
-    <button id="submit_questions">Add Question</button>
-    
+        <h2>Add Question</h3>
+        <table>
+            <tr>
+                <td>
+                    <p>Multiple Choice</p>
+                </td>
+                <td>
+                    <input type="checkbox" id="checkMC" value="Multiple Choice" checked="true"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p>Question: </p>
+                </td>
+                <td>
+                    <input type="text" id="question" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p> Option 1: </p>
+                </td>
+                <td>
+                <p> <input type="text" id="answer1"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p> Option 2: </p>
+                </td>
+                <td>
+                    <input type="text" id="answer2"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p> Option 3: </p>
+                </td>
+                <td>
+                    <input type="text" id="answer3"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p> Option 4: </p>
+                </td>
+                <td>
+                    <input type="text" id="answer4"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p> Option 5: </p>
+                </td>
+                <td>
+                    <input type="text" id="answer5"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p> Option 6: </p>
+                </td>
+                <td>
+                    <input type="text" id="answer6"/>
+                </td>
+            </tr>
+        </table>
+        <button id="submit_questions">Add Question</button>
     </div>
 
     <div id="questions">
