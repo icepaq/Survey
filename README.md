@@ -1,10 +1,8 @@
-# municipalsurvey
-
 Municipal Survey is a survey content management system created with Spring currently under development.
 
 Create and manage surveys. View raw data or graphs generated with the Google Charts API.
 
-# Running the application
+## Running the application
 
 To run the project standalone, run **mvnw spring-boot:run**
 
